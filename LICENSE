@@ -1,0 +1,8 @@
+Copyright © 2026 WayetGames (Wyatt Crouch).
+
+Any individual is permitted to implement, use, and edit the source code of the ECY Resources and Compilation program using the official Specification of the language, subjected to the following conditions:
+
+* Non-Redistribution of Source: You may not redistribute this specification and the official resources under a different name, source, or authority.
+Redistribution is allowed under a different source for educational purposes, but also in portions for: Commentary. The original author must be cited.
+* Attribution & Ownership: All ownership rights fall back to WayetGames (Wyatt Crouch). You may not claim ownership of this version of the specification or any official implementation of the language and its resources. If the named work is redistributed in any way that is permitted by this license, the original author(s) of the work must be named or credited in any other way.
+* Free Implementation: Any non-official implementation of this language made from the official specification can be used without a license or royalty. The official implementation is also open-source, but under Attribution & Ownership must be credited to the original author(s) of the work.
