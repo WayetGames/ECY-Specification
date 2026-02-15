@@ -1,0 +1,2921 @@
+# The ECY Programming Language - Specification
+
+# I Beginning
+
+In modern times, the range of programming languages found in working environments has ever so slightly been decreasing over the past decades. Not a while ago, a C-Programmer would have found a job just as easy as a Java-Programmer, or any other programmer that is familiar with one of the “big languages”. But now, being a fresh C-Programmer makes life harder, not only because nobody wants an inexperienced worker over a worker with experience, but also because most jobs these days are asking for “Experienced in Python”, “Excel Strengths” and most of them all, “Vibe coding experts”, like I choose to call them.
+
+The problem might not be instantly clear for someone who has never really coded before in their life, but let me tell you: These “modern” languages, that mostly have been designed not recent enough to be in current modern times, have big flaws. Mainly:
+
+* Everything being dumbed down to a max
+
+If your programming language bans brackets for being too “complicated”, I wonder how it hasn't banned classes already, because those are relatively kinda hard
+
+* Everything deemed “too hard” deemed “unneccessary”, followed by removal
+
+Modern languages often just remove anything that is too hard, instead of trying to find a good workaround. One example being C# dealing with pointers: They are locked behind unsafe \{} instead of being revised and made memory-safe. Wouldn't be that bad if C# tried to do that, but they only scraped the surface of possibilities. While pointers are indeed garbage collected, they could've been so much more.
+
+* Everything is made less free to make things simple
+
+Often times, features that exist to allow more freedom for programmers are just forgotten about, left to rot with C and C++, instead of being kept in. For languages like Python, this is explained by the heavy interpretation of the language, making extras cost a lot of performance just to be implemented, not just used. But things like C++ bit manipulation, that is completely optional, is just not included for “simplicity”. After all, if your language is not designed to be Scratch 2, bit manipulation can easily be kept in because things like that are just giving more freedom to coders. Now, I understand that a more modern language like Java is trying to be easy to learn, but something most white papers underestimate is the power of sectionizing everything. This means that this paper will always have a feature findable by the chapter and sub-chapter names.
+
+​
+
+ECY was born from that dilemma with programming languages and also another balancing issue that shouldn't even exist in the first place given good design choices, like requiring the coder to instruct the compiler to do assumptions and such using keywords or syntax structures.
+
+# II ECY's role in the dilemma
+
+ECY is not trying to be C# on drugs or Java with overloading, it's trying to be a solution to a problem I found in programming languages I personally use, like C++, C# and Java itself. The problem, as I see it, is the fact that for some reason, simplicity and features seem to be connected. If one goes up, the other goes down.
+
+Take C++, for example. In C++, you can do almost anything you'd dream of: Manipulate bits, access a variable from anywhere using pointers, write an entire video game engine. But then you try to do any of these and are suddenly met with code that looks like what I'd find next to the definition of “Spaghetti Code” in the dictionary. It's not very simple to use C++. Even the “Hello, World!” program is connected with so many C++ features that trying to learn why we have to do `cout << "Hello, World!"` instead of having a designated `print()` function takes atleast 2 months of reading handbooks and scowering StackOverflow. But this is what allows you to do way too many cool things, like write a custom output stream and then writing it to the cout-stream or taking the first 5 chars of input from the cin-stream - you just can't do that in a language like Java or C#.
+
+​
+
+This is why ECY was made to be the first language to try and bring both simplicity and a rich feature set. In fact, the ECY “Hello, World!” program, or as a file you could call it “helloworld.ecy”, is one of the more simple “Hello, World!” programs:
+
+```
+println("Hello, World!");
+```
+
+No classes, no main(), no imports: ECY truly tries to keep it simple and fresh in the world of programming. But this is not the only thing the language shines at.
+
+For example, we could look at a simple ECY struct for a complex number, which at the current time would seem rather cryptic (as usual for a new language) but the structure is exactly equal to the structs from other programming languages:
+
+```
+import <emath>; // ECY Math
+
+public struct Complex {
+  public real: f32; // A float that always is and always will be 32 bits
+  public img: f32;
+        
+  return { mag: f32 = sqrt(real**2 + img**2); } => mag; // The magic cocaine of ECY
+}
+```
+
+The entirety of ECY and its ideas can be condensed down into a single principle: _simple complexity_. _simple complexity_ is a term coined by me for how ECY is made: simple but feature-rich.
+
+The second most important principle ECY runs on is the principle of _opting-in_. Almost any compiler & syntax sugar in the language is only useable via keywords or settings, which enables newbies to have a helping hand and veterans to know exactly how their code will run and be the most efficient at debugging.
+
+# III How this paper will be written
+
+So far, this paper has been written in the first person, but to follow a more straightforward way of explaining my life-long programming dream, the entirety of the explanation part of this paper will be written not in first person, not in third person, but in no person at all. It will be just raw information, no comparing with other languages, no praising itslelf in its own paper.
+
+This is because I believe a good programming language isn't defined by its presentation but rather by its features, so wether this paper presents ECY in a good or bad light isn't answered by yes or no, but by the follow-up question “Is it objective?”. I've read through some language white papers just to read “Another great thing about…” or “This is why … is so much better than …” or even “Here is some problem from another language, and … is the solution” every few lines, making it seem like a scammy mergant trying to sell you shady things in a dark corridor by doing even shadier marketing for himself. This is why after this chapter, the entire remainder of the ECY language white paper will be written as objectively and impersonal as possible to try and get an impression, not assign one.
+
+As I like to call it, this paper does “Teaching instead of Preaching”.
+
+# 1 Introduction
+
+## 1.1 Printing
+
+### 1.1.1 The print function
+
+Following modern principles, ECY uses a simple to write syntax for outputting values to the console:
+
+```
+print("Hello, World");
+```
+
+This print function comes in two flavors: `print()` and `println()`. `print()` prints a given literal or variable to the console while `println()` adds a line break after printing.
+
+### 1.1.2 Limitations of the print function
+
+The print function has a limitation for custom Objects to be printed as ECY does not have an automatically called objToString() function, but ECY contains the built-in function called `obj2str(obj: Object)` which allows you to invoke the conversion of Objects into Strings manually.
+
+## 1.2 Inputting
+
+### 1.2.1 The input function
+
+Unlike most modern programming languages, ECY takes a different looking approach to inputting. There are two ways to get an input in ECY from the console, those being:
+
+```
+getInput(into: str);
+getInputTo(into: str, stopChar: chr);
+```
+
+`getInput()` and `getInputTo()` both read input until a stop char and set a given string `into` to the read input. `getInput()` has the stop char set to a line break while `getInputTo()` allows customization. As of ECY-1.0, `getInput()` has no overload for stopChar implemented, so `getInputTo()` will remain the only way of achieving a `getInput()` with stopChar.
+
+## 1.3 Variables
+
+### 1.3.1 Declaration
+
+In ECY, variables are declared name-first. Name-first means that the name comes before the type in declaration:
+
+```
+NAME: TYPE = VALUE;
+```
+
+Also, as visible, ECY uses the semicolon as a command end marker.
+
+### 1.3.2 Reinitialization
+
+Reinitialization follows the same basic principle as declaration, that being using the following syntax:
+
+```
+NAME: TYPE = VALUE;
+NAME = NEWVALUE; // Reinitialization
+```
+
+### 1.3.3 Types
+
+Types are named following a repetitive order of initial + bit width. This means that all the basic types you know are the following in ECY:
+
+```
+i8 // byte
+i16 // short
+i32 // int
+i64 // long
+i128 // long long
+u8 // unsigned byte
+u16 // unsigned short
+u32 // unsigned int
+u64 // unsigned long
+u128 // unsigned long long
+b1 // boolean
+b32 // 32-bit boolean
+b64 // 64-bit boolean
+f32 // float
+f64 // double
+d32 // decimal
+d64 // 64-bit decimal
+str // string
+c8 // ASCII char
+c16 // Unicode char
+c32 // 32-bit char
+```
+
+All these types also have a shorthand:
+
+```
+int => i32
+uint => u32
+bool => b1
+float => f32
+dbl => f64
+dec => d32
+chr => c8
+```
+
+There are also some postfixes for numbers:
+
+* float postfix is -f ⇒ `var: f32 = 10.5f`
+* double postfix is -d, even though ECY defaults any number to `f64` even without a -d postfix
+* binary postfix is -b and binary is only useable as literals in ECY
+* hex prefix is 0x
+
+### 1.3.4 Type Conversion
+
+Converting types in ECY is easy and automatic. Type casting is performed through the parantheses syntax:
+
+```
+num: i32 = 15;
+var: f32 = 52.6f;
+num = (i32)var;
+```
+
+Even though, in cases like above, ECY can even automatically detect a conversion and perform auto-casting, which still has to be enabled manually for every project to avoid forced assumption by the compiler.
+
+While it should be enabled by default (and this is assumed in the entire whitepaper's code), you can disable it either by setting the compiler optimization level to 0 (see “9.0 Compile-Time Code Handling”) or by enabling it globally in the project settings.
+
+### 1.3.5 Placeholder variables
+
+ECY enables the usage of the `_` placeholder, a special variable avaiable in any ECY project. The placeholder variable is actually not a variable and instead instructs the compiler to create a register value with the given input. Here is an example allowing you to print a non-existent variable:
+
+```
+println(_: i32 = 5);
+```
+
+This placeholder is useful as it can also create ghost instances of classes. ECY even resolves any ephemeral allocation caused by the placeholder variable automatically as it's part of the language itself.
+
+The `_` placeholder also stays on its register until overridden by either a literal or an assignment to the placeholder itself. For any type or object whose `sizeOf(type)` is too big for fitting in less than 4 registers, a reference to the given data is used. In the case of a literal, new memory is allocated either on the stack or the heap, depending on what is actually placed into the placeholder.
+
+### 1.3.6 String conversion
+
+Strings can now automatically convert any value into a string thanks to the automatic type conversion behavior by ECY, which is enabled by default only for strings and chars. Here is an example of converting a float to a string and printing it out:
+
+```
+val: f32 = 21.01f;
+txt: str = val;
+println(txt); // prints 21.01
+```
+
+You can also make usage of the `obj2str` function or even the `num2str` function, which includes an overload for enabling and disabling the float marker and has support for localization via another overload:
+
+```
+num2str(in: Object);
+num2str(in: Object, localize: bool);
+num2str(in: Object, localize: bool, marker: bool);
+```
+
+That way you can use `num2str` when converting a number into a string as in above example:
+
+```
+val: f32 = 21.01f;
+txt: str = num2str(val, false, true);
+println(txt); // now prints 21.01f
+```
+
+### 1.3.7 String Parsing
+
+ECY is equipped with a built-in parse function from string to every primitive data type. Each of those functions is named parseToTYPE, where TYPE is replaced by the given parsing type. Here is an example of parsing a string to i32:
+
+```
+num: i32;
+txt: str = "25";
+num = parseToi32(txt);
+```
+
+You can also use the more sophisticated `parseTo()` function, which includes the ability to specify the primitive data type in question:
+
+```
+parseTo(in: str, t: freestr);
+```
+
+### 1.3.8 Freed Strings
+
+Freed strings are a brand new concept avaible in ECY that allows for the use of strings as parameters without requiring double quotes, even though double quotes can still be used.
+
+Freed strings can only be used in function parameters and to create one you use the `freestr` type. Here is an example usage with `parseTo()`:
+
+```
+// parseTo(in: str, t: freestr)
+parseTo("Hello, World", i32); // => parseTo("Hello, World", "i32");
+```
+
+Freed strings are special in that they are the only string type to end on these symbols:
+
+* ,
+* )
+* whitespace
+
+Freed strings also take precedence in the parser over keywords, but since they only exist inside parameter lists, no extra parsing and linking has to be done unless inside a parameter list.
+
+### 1.3.9 SAIF (Shorthand Auto-Initialization Feature)
+
+SAIFs are a new concept in ECY that allows for variables to be declared in a fast and quick way. The syntax for a SAIF looks like the following:
+
+```
+NAME.SHORTHAND{VALUE};
+```
+
+SAIF Shorthands are short versions of type names used in SAIFs only. For every type, these are the respective SAIF Shorthands:
+
+```
+i8 => byte
+i16 => short
+i32 => int
+i64 => long
+i128 => xlong
+u8 => ubyte
+u16 => ushort
+u32 => uint
+u64 => ulong
+u128 => uxlong
+f32 => fl
+f64 => dbl
+b1 => bool
+b32 => b32
+b64 => b64
+d32 => dec
+d64 => lec
+str => str
+c8 => chr
+c16 => wchr
+c32 => xwchr
+```
+
+SAIF can only be used to declare new variables, and not to assign existing ones. Here is an example of using SAIF efficiently:
+
+```
+num.int{0};
+txt.str{""};
+getInput(txt);
+num = parseTo(txt, i32);
+println(num);
+getInput(txt);
+val.int{parseTo(txt, i32)};
+println(val);
+```
+
+As visible, the initialization value of a SAIF can also be any term or function call that returns a value of the given type.
+
+### 1.3.10 SAF (Shorthand Assignment Feature)
+
+SAF is yet another shorthand syntax for variables, but used for assigning existing variables. The syntax for SAF is defined as:
+
+```
+NAME(NEWVALUE);
+```
+
+It's recommended that SAFs are only used for assignment functions and quick assignment to avoid a loss of readability from overusing SAFs, and the compiler will recommend the usage of a normal assigning when an SAF is used outside the above described context, but will not force the replacement.
+
+Like SAIF, the assigning value of a SAF can be any term or function call that returns a value of the correct type.
+
+### 1.3.11 What obj2str does
+
+`obj2str` is actually an internal structural function that gets inlined around the converted object during runtime or, in the case of a primitive, sent to a special `prim2str` function.
+
+The output of `obj2str` is as following:
+
+```plaintext
+[field1name: field1value, field2name: field2value, field3name: field3value, ...]
+```
+
+### 1.3.12 \$-string literals
+
+To allow for the faster creation of string-variable constructions, ECY uses the \$-string literal. This kind of string allows for the injection of variables into itself via `{VAR}`, which is replaced by a value appension during compile-time:
+
+```
+a: i32 = 42;
+println($"a = {a}"); // Prints "a = 42"
+```
+
+\$-string literals cannot contain literal values inside `{}`, but they can contain any term that results in a single value and contains variables.
+
+### 1.3.13 Built-In object functions
+
+* `typeOf(obj: Object)`: Returns the type of the object.
+* `sizeOf(obj: Object)` or `sizeOf(definition)`: Returns the size of the given type (/definition) or object.
+* `nameOf(obj: Object)`: Returns the name of the object. For \$-string literals, `#` can be used instead like `#x`
+* `familyOf(type)`: Returns the family of the type.
+
+# 2 Operators
+
+## 2.1 Basic Operators
+
+### 2.1.1 Operator Types
+
+ECY has three main types of value operators, those being:
+
+* Assignment Operators (AsO)
+* Arithmetic Operators (ArO)
+* Comparison Operators (CO)
+* Bitwise Operators (BO)
+* Logical Operators (LO)
+
+### 2.1.2 Assignment operators
+
+There are different assignment operators (AsO) in ECY. The main assignment operator is the equality sign `=`, used to set values of objects:
+
+```
+var: i32;
+var = 25;
+num: i32 = 20;
+var = num;
+```
+
+Before we get to further AsOs, we'll have to get to ArOs.
+
+### 2.1.3 Arithmetic operators
+
+Arithmetic operators allow for the arithmetic transformation of values. There are six base arithmetic operators in ECY:
+
+* Addition Operator
+
+The addition operator uses the plus symbol `+` and returns the sum of the left- and the righthand value. ECY also performs automatic conversion for numerical values.
+
+```
+5 + 5
+=> 10
+5 + 6
+=> 11
+7.4f + 2.5f
+=> 9.9f
+1.3f + 2
+=> 3.3f
+9 + 9d
+=> 18.0d
+2.4f + 2.4d
+=> 4.8d
+```
+
+* Subtraction Operator
+
+The subtraction operator uses the minus symbol `-` and returns the difference of the left- and the righthand value. ECY also performs automatic conversion for numerical values.
+
+```
+5 - 5
+=> 0
+5 - 6
+=> -1
+7.4f - 2.5f
+=> 4.9f
+1.3f - 2
+=> 0.7f
+9 - 9d
+=> 0.0d
+2.4f - 2.4d
+=> 0.0d
+```
+
+* Multiplication Operator
+
+The multiplication operator uses the star symbol `*` and returns the product of the left- and the righthand value. ECY also performs automatic conversion for numerical values.
+
+```
+5 * 5
+=> 25
+5 * 6
+=> 30
+7.4f * 2.5f
+=> 18.5f
+9 * 9d
+=> 81.0d
+```
+
+* Division Operator
+
+The division operator uses the slash symbol `/` and returns the division of the left- and the righthand value. ECY also performs automatic conversion for numerical values.
+
+```
+5 / 5
+=> 1
+10 / 2
+=> 5
+7.5f / 2.5f
+=> 3
+9 / 9d
+=> 1.0d
+9f / 9d
+=> 1.0d
+9 / 9f
+=> 1.0f
+```
+
+* Modulo Operator
+
+The modulo operator uses the percent sign `%` and returns the remainder of the division of the left- and the righthand value. ECY also performs automatic conversion for numerical values.
+
+```
+5 % 5
+=> 0
+5 % 6
+=> 5
+9d % 2.5f
+=> 1.5d
+9 % 9d
+=> 0.0d
+```
+
+* Exponentiation operator
+
+The exponentiation operator uses a double star `**` as its symbol and returns the lefthand value to the power of the righthand value. ECY performs automatic conversion for numerical values.
+
+```
+5 ** 2
+=> 25
+10 ** 4
+=> 10000
+3 ** 3
+=> 27
+4 ** 0.5f
+=> 2.0f
+4 ** 0.5d
+=> 2.0d
+4d ** 0.5f
+=> 2.0d
+```
+
+### 2.1.4 Condensed arithmetic operators
+
+ECY allows for arithmetic operators to be condensed and combined with the assignment operator. This condensed arithmetic operator will act like assigning a variable with the arithmetic operation applied to the variable itself:
+
+```
+var = var ? VALUE;
+```
+
+Where `?` is any arithmetic operator, `var` is any variable and `VALUE` is any value that can be combined with `var` arithmetically.
+
+Condensing a construction like above results in this term:
+
+```
+var = var ? VALUE;
+// Condenses to:
+var ?= VALUE;
+```
+
+It is important to know that this condensed operator will always result in the same expanded term structure:
+
+```
+var: i32 = 15;
+num: i32 = 23;
+var += num;
+// Always equal to:
+var = var + num;
+```
+
+Only one `var ? VALUE` term can be condensed at once and any extra term may either be kept as is or has to be calculated seperately:
+
+```
+var = var + num * 10;
+// Condenses to:
+var += num * 10;
+
+var = var * 10 + num - 5;
+// Condenses to:
+var *= 10;
+var += num - 5;
+// But:
+var *= 10 + num - 5
+// Expands to:
+var = var * (10 + num - 5);
+// Which can be expanded algebraically to:
+var = var * (5 + num) = var * 5 + var * num;
+```
+
+### 2.1.5 Conditional operators
+
+You can use conditional operators to test conditions. A basic condition follows this structure, given that `?` is a conditional operator and the the whole term is enclosed in a pair of parantheses:
+
+```
+a ? b
+```
+
+Where `a` and `b` are both of compatible data types or terms that result in values of compatible data types.
+
+Here are all conditional operators:
+
+​
+
+| Operator | Function                                                                       | Name                     |
+| -------- | ------------------------------------------------------------------------------ | ------------------------ |
+| ==       | returns true if a and b are equal by value                                     | Equality operator        |
+| ===      | returns true if a and b are the same object or are pointing to the same object | Memory equality operator |
+| \<       | returns true if a is smaller than b                                            | Smaller than operator    |
+| >        | returns true if a is bigger than b                                             | Bigger than operator     |
+| \<=      | returns true if a is smaller or equal to b                                     | Smaller equal operator   |
+| >=       | returns true if a is bigger or equal to b                                      | Bigger equal operator    |
+| !=       | returns true if a and b are not equal                                          | Inequality operator      |
+
+## 2.2 Advanced operators
+
+### 2.2.1 Bitwise Operators
+
+Bitwise operators allow for the bit manipulation of any byte-based data type, primarily numerical and character types like `i32`, `u8`, `f64`, `str`, and other types. There are 2 different types of bitwise operations in ECY:
+
+* Bitwise Gate Operations: Operations that apply logic gate transformations onto variables
+* Bitwise Shift Operations: Operations that transform the bit order of a variable
+
+The Bitwise Gate Operations also have condensed versions of their operators.
+
+### 2.2.2 Bitwise Gate Operators
+
+These are operators that apply logic gate transformations onto variables:
+
+| Operator | Function                                | Name        | Example     |
+| -------- | --------------------------------------- | ----------- | ----------- |
+| ^        | Applies the XOR logic gate to a using b | Bitwise XOR | 8 ^ 4 = 12  |
+| \|       | Applies the OR logic gate to a using b  | Bitwise OR  | 8 \| 4 = 12 |
+| &        | Applies the AND logic gate to a using b | Bitwise AND | 8 & 4 = 0   |
+| \~       | Applies the NOT logic gate to a(unary)  | Bitwise NOT | \~4 = -5    |
+
+### 2.2.3 Bitwise Shift Operators
+
+These are operators that manipulate the bits of a byte-based data type. As of ECY-1.0, only 2 of those exist:
+
+​
+
+| Operator | Function                                                            |
+| -------- | ------------------------------------------------------------------- |
+| \<\<     | Shifts all the bits of a by b to the left (b has to be an integer)  |
+| >>       | Shifts all the bits of a by b to the right (b has to be an integer) |
+
+### 2.2.4 Logical Operators
+
+The bitwise operators can be used for conditions as well, where `^`, `|` and `&` work the same way for conditionals, returning the respective transformation with the left condition's result and the right one, repsectively, even tho they are found as `^^`, `||` and `&&` and the conditions in question need to be enclosed by a pair of parantheses, each.
+
+Bitwise NOT only exists as ! in conditions and boolean math, flipping the result of the condition or boolean result. Same as with the other bitwise operators, the condition has to be enclosed in a pair of parantheses.
+
+Here is an example of using LO's:
+
+```
+(a > b) && (b != 5)
+// Returns true if a is bigger than b and b is not 5
+
+(a > b) || (b != 5)
+// Returns true if a is bigger than b or b is not 5 or if both are true.
+
+(a > b) ^^ (b != 5)
+// Returns true if either a is bigger than b or b is not 5. If both or none are true, returns false.
+
+!(a > b)
+// Returns the opposite of if a is bigger than b. Effectively equal to (a <= b).
+```
+
+# 3 Memory Model
+
+## 3.1 Pointers
+
+### 3.1.1 Introduction to the concept of pointers in ECY
+
+Pointers are a quick and efficient way to handle memory in ECY. They allow for memory addresses to be stored and edited by code.
+
+Every pointer in ECY is stored as a 64-bit ulong and can have 2 values extracted from itself: Its value, which is the memory address it's pointing at, and the value of the memory found at that address.
+
+The act of extracting the value of the memory a pointer is pointing at is called “dereferencing a pointer”. To dereference a pointer you do:
+
+```
+*NAME;
+```
+
+Where `NAME` is the name of the pointer in question.
+
+### 3.1.2 Pointer types & Free pointers
+
+There are 2 types of pointers one will encounter in ECY:
+
+* Typed pointers: These are pointers that point to an explicit type (like `int`, `str` or even `bool`)
+* Free pointers: These are pointers that point to a certain size of memory (mainly 1, 8, 16, 32, 64 and 128 bits of size). Unlike typed pointers, these pointers can only changed the derefenced value using integer values as bytemaps, even though they can still point to non-integer types. Free pointers also cannot point to string or instance structures as those are of unpredictable size.
+
+### 3.1.3 Creating a typed pointer
+
+The creation of a typed pointer in ECY follows the same procedure as creating a normal variable, save for the addition of a star after the type name:
+
+```
+myPtr: i32*;
+```
+
+Every variable in ECY (even pointers) has a memory address at where it lives in the computers memory. Pointing to any value the compiler would save in a register will allocate memory instead, except for the placeholder which cannot be pointed to. To now actually point a pointer, you need to set it to a memory address, which you can do by using this syntax, where `PTR` is the name of the pointer you're pointing and `NAME` is the name of the variable you want to point it at:
+
+```
+PTR = &NAME;
+```
+
+### 3.1.4 Short explanation of syntax tokens & objects
+
+In ECY, syntax tokens are symbols that have special functionality if they are placed before or after a syntax object.
+
+Syntax objects are the static parts of syntax, usually referred to by a fully capitalized name, though operators are also seen as syntax objects.
+
+Here is a syntax example with syntax objects & tokens marked:
+
+```
+NAME: TYPE = VALUE;
+// Objects: NAME, TYPE, =, VALUE
+// Tokens: None
+PTR = &NAME;
+// Objects: PTR, =, NAME
+// Tokens: &
+```
+
+The distinction between objects and tokens lies within their syntax consistency. The syntax consistency of any part of a syntax is how static the placement of the given syntax piece is.
+
+As an example, in the variable declaration syntax:
+
+```
+NAME: TYPE = VALUE;
+```
+
+`NAME` and `TYPE` have high syntax consistency as they cannot be omitted from the declaration syntax while `=` and `VALUE` have a medium syntax consistency as those two can be omitted depending on context.
+
+In the typed pointer pointing syntax:
+
+```
+PTR = &NAME;
+```
+
+`PTR` and `=` have high syntax consistency. `NAME` and `&` have a medium syntax consistency because they can be replaced by a literal `u64` value:
+
+```
+var: i32 = 15;
+ptr: i32*;
+ptr = &var; // valid; points ptr at the address of var
+ptr = 15; // valid; points ptr at address 15
+```
+
+### 3.1.5 The ‘&’-Token
+
+The `&`-Token returns the memory address of any given object or variable `NAME`. It has to be placed before `NAME` and it has to directly touch `NAME`:
+
+```
+&NAME; // NAME is to be replaced by the name of any given object or variable; Returns the address of NAME
+```
+
+The `&`-Token can be used in any context and only has a few exceptions when it comes to functionality, to which we'll get later.
+
+In this example, we print out the memory address of an `i32` num:
+
+```
+num: i32 = 42;
+println(&num);
+```
+
+### 3.1.6 The ‘\*’-Token
+
+The `*`-Token is used to return the value of the object or variable a pointer `PTR` points to. It has to be placed before `PTR` and it has to directly touch `PTR`:
+
+```
+*PTR; // Same as '&'-Token, PTR is any pointer and has to be replaced by that pointers name
+```
+
+If the `*`-Token is used on an empty pointer, the compiler can react in to ways:
+
+* If the pointer was declared with the keyword `safe` before the pointer type: Allocate new memory of matching type and point the pointer to that new memory before dereferencing it
+* If the pointer was not declared with the keyword `safe`: Throw `NullPointerException`
+
+Unlike the `&`-Token, the `*`-Token returns an object, not a value, allowing you to reassign a dereference to change the variable or object behind the value directly:
+
+```
+// held true for all following code
+PTR: safe i32*;
+NAME: i32 = 25;
+PTR = &NAME;
+// End of held true code
+
+*PTR = 25; // valid
+&NAME = 25; // invalid
+
+// using the built-in "printobj" function to print the object given:
+printobj(*PTR); // prints the name of NAME, its type and its value
+printobj(&NAME); // prints "{NULL: NULLTYPE; Value: NULL}"
+```
+
+### 3.1.7 Creating free pointers
+
+As said earlier, free pointers allow for the creation of pointers confined to a bit size instead of a specific type.
+
+Free pointers are created using the free pointer types:
+
+```
+ptr1
+ptr8
+ptr16
+ptr32
+ptr64
+ptr128
+```
+
+The special thing about free pointers is that the `*`-Token is not required during declaration, but the Compiler ignores the existence of it anyways. This means that for free pointers, both of these are valid declarations:
+
+```
+freePtr1: ptr32;
+freePtr2: ptr32*;
+```
+
+Otherwise, free pointers work like typed pointers, except for two big differences:
+
+* Bit assignment: If you dereference a free pointer, the returned value will be a `ixx`, `xx` being the bit number of the pointer, which means that a floating-point decimal will return as an integer.
+
+```
+num: f32 = 5.5f;
+freePtr1 = &num;
+print(*freePtr1); // prints the bits of num as an i32
+```
+
+This also applies to assigning a dereferenced value, which must happen as an `ixx`. ECY offers a special function `cast2Bit(Numerical num)`, which takes in any numerical value and converts it to this `ixx` value. It is important to know that dereferencing a free pointer pointing to an integer will return a normal integer that is equal in value to the real integer that is dereferenced.
+
+* By-size pointing: When pointing a free pointer you can point it to any primitive data type with bit width x that matches the free pointer's declared size:
+
+```
+num: f32 = 5.5f;
+val: i32 = 61;
+wrongval: i64 = 12;
+freePtr: ptr32;
+freePtr = &num; // This works as freePtr points to a size of 32 bits and num is a 32-bit primitive data type
+freePtr = &val; // Also works as freePtr points to a size of 32 bits that matches val's bit width of 32
+freePtr = &wrongval; // This will throw an error as freePtr points to a size of 32 bits but wrongval has a bit width of 64
+```
+
+### 3.1.8 Conversion between pointers
+
+Any pointer can be converted into another of same pointer type (free, typed, safe) if given conditions are met:
+
+* Same bit length: The bit length the pointers point at must be equal
+* Convertable type: The pointers must point at convertable types (like float → int)
+* Safe conversion specialty: If the converted to pointer is `safe`, conversion cannot occur. Only `safe` to safe/typed/free conversion is possible
+
+## 3.2 Object memory handling
+
+### 3.2.1 Where primitives life
+
+Primitive values are always allocated to the stack if either they're pointed to somewhere in code or not optimizable by a temporary register value.
+
+Only non-object primitives are actually in the stack, with structs being an exception by being placed in the stack as well, even though they're not a primitive. For all other memory, a different region is used.
+
+### 3.2.2 Where objects life
+
+Structs in ECY, as discussed above, are counted as similar to primitive data and thus allocated to the stack. On the other hand, classes are always heap-allocated.
+
+Pointers to any object are also counted as primitve data (because they technically are) and so they're also stack allocated.
+
+# 4 Access modifiers
+
+## 4.1 Basics
+
+### 4.1.1 Definition of modifiers
+
+In ECY, modifiers allow for the transmution of the states of a variable.
+
+The states of a variable, also called variable states, define how accessible a variable is. There are 4 states, those being:
+
+* V: The visibility state of the variable. Defines if the variable is visible in the current scope
+* R: The readability state of the variable. Defines if the variable can be read in the current scope
+* W: The writeable state of the variable. Defines if the variable can be reassigned in the current scope
+* S: The static state of the variable. Defines if the variable is static, which changes how the variable behaves
+
+Any access modifier in ECY can be defined using the change of the 4 variable states, more precisely the states controlling access to the variable, not it's value. X being seen as any variable state, +X means enable, X means no change, and -X means disable.
+
+```
+public (+V S)
+static (V +S)
+private (-V S)
+global (+V S) For all scopes
+hidden (/ / / /) special as it avoids a variable to exist in said scope (not appliable globally)
+```
+
+In the same way, any value access modifier can also be defined:
+
+```
+readonly (+R -W);
+writeonly (-R +W);
+readwrite (+R, +W);
+```
+
+### 4.1.2 Per-Scope Modifiers
+
+ECY's memory model opens way for the ability to define the accessability of a variable and its value inside any kind of scope. The given kinds of scopes at the current time are:
+
+```
+program: Anything not sorted into the other scope kinds
+statement: Any statement inside { }
+function: Inside functions heads and bodies
+class: Inside class bodies
+struct: Inside any kind of struct's body
+library: Inside libraries
+header: Inside headers
+```
+
+To actually define modifiers per-scope, one has to use the following syntax:
+
+```
+(scope modifier) variable
+```
+
+Note that any modifier that enables the Static State of a variable may not be used per-scope due to limitations given by compilation and IntelliSense, but also that immutable variables have a constant immutability.
+
+In the same way, `readwrite` is the opposite being a per-scope only modifier like hidden.
+
+Example of per-scope modifiers being used:
+
+```
+(program hidden) (function public readwrite) readonly val: f32 = 42;
+```
+
+### 4.1.3 Priority-System in per-scope modifiers
+
+Inside ECY, per-scope modifiers follow a premanent ruleset for resolving the priorities of per-scope modifiers.
+
+First of all, any scope can only be listed once, so the priorities between them are always the same, being that all have equal priority. The difference is the priority towards the un-scoped modifier, which is based on position:
+
+```
+(program hidden) public (function hidden)
+~~~^~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+Overrides public       Overriden by public
+```
+
+This way, complex modifier systems like the following are possible to be done in ECY:
+
+```
+(program readwrite) readonly (function hidden) (class writeonly) global val: f32 = 1612;
+/*
+Global readonly val, but:
+* +R +W inside program scope
+* hidden in functions
+* -R +W and inside classes
+*/
+```
+
+# 5 Control Flow
+
+## 5.1 Conditionals
+
+### 5.1.1 Built-in truth values
+
+ECY comes shipped with built-in truth values like most programming languages, those being `true` and `false`. It's important to know that like C and C++, bools can be represented as numbers and same can true and false, even if printing them prints true and false instead of 1 and 0.
+
+​
+
+Casting `true` and `false` to any number primitive will return 1 and 0:
+
+```
+println((int)true); // prints "1"
+println((int)false); // print "0"
+```
+
+This allows for bit manipulation using `true` and `false` as quick-hand 1's and 0's, using the ECY compiler to have it setup regvals automatically:
+
+```
+val: f32 = 10;
+val += (int)true;
+println(val); // prints "11"
+```
+
+### 5.1.2 If-Statement, else-statement and else-if-statement
+
+The `if`-Statement in ECY follows a robust but powerful syntax:
+
+```
+if (CONDITION) { CODE }
+```
+
+Same does the `else`- and `else if`-statement, both working like expected from other programming languages:
+
+```
+if (CONDITION) { CODE }
+else if (CONDITION) { CODE }
+else { CODE }
+```
+
+Important to note is that inside `CODE`, no methods or objects can be defined. `CODE` also counts as a scope, so any variables defined inside of it are not accessable to code outside of it.
+
+### 5.1.3 Conditions
+
+Conditions are always made up of three parts:
+
+* The left conditional
+* The conditional operator
+* The right conditional
+
+The conditional operators were already thoroughly introduced in 1.4.5 and will be used as the conditional operators in conditions.
+
+The left and right conditional are always terms that result in a comparable value, like numericals, text-based or other types of data.
+
+​
+
+A condition always evaluates to either true or false, true being the condition proven as correct, false the opposite, so proven to be incorrect.
+
+If statements use these conditions and only execute the CODE if the condition inside their parantheses evaluates to true:
+
+```
+if (a > b) {
+  a = b;
+}
+```
+
+Else statements must be placed right after if statements or else-if statements and only execute the CODE if the condition inside the parantheses of the behind placed if/else-if statement evaluates to false:
+
+```
+a: i32;
+b: i32;
+text: str;
+print("Enter number 1: ");
+getInput(text);
+a = parseToi32(text);
+println("");
+print("Enter number 2: ");
+getInput(text);
+b = parseToi32(text);
+println("");
+if (a > b) {
+  println("Number 1 is bigger than number 2");
+}
+else if (a == b) {
+  println("Both numbers are equal");
+}
+else {
+  println("Number 1 is smaller than number 2");
+}
+```
+
+### 5.1.4 Conditions and Logic Gates
+
+Logic gates can be used on both conditions and booleans to change the evaluation of a boolean term or condition.
+
+Below are tables showing the possible outputs of every logic gate given true and false values:
+
+* AND-Gate &&
+
+| Input 1 | Input 2 | Output |
+| ------- | ------- | ------ |
+| true    | true    | true   |
+| true    | false   | false  |
+| false   | true    | false  |
+| false   | false   | false  |
+
+* OR-Gate ||
+
+| Input 1 | Input 2 | Output |
+| ------- | ------- | ------ |
+| true    | true    | true   |
+| true    | false   | true   |
+| false   | true    | true   |
+| false   | false   | false  |
+
+* XOR-Gate ^^
+
+| Input | Input | Output |
+| ----- | ----- | ------ |
+| true  | true  | false  |
+| true  | false | true   |
+| false | true  | true   |
+| false | false | false  |
+
+* NOT-Operator !
+
+| Input | Output |
+| ----- | ------ |
+| true  | false  |
+| false | true   |
+
+Here are some code examples:
+
+```
+a: i32;
+b: i32;
+c: b32 = (a > b) || (a < b) // True if a is either bigger than b OR smaller than b or both
+d: i32;
+e: b32 = (a == d) && (a > b) // True if a is both equal to d AND bigger than b
+f: b32 = (a == d) ^^ (b >= a) // True if either a is equal to d OR b is bigger or equal to a, but not if BOTH are true
+```
+
+The conditions in above example are used to assign booleans, which is possible because conditions evaluate to a boolean value (true or false), so they can be used for assigning boolean values.
+
+### 5.1.5 Inline if-statement and if-else-statement code
+
+It's possible to use if statements to lock a line of code behind a condition by placing it behind the code in question:
+
+```
+if (a > 6) a = 2 * b;
+else if (a == 3) a = 3 * b;
+```
+
+This also works for else, though else doesn't have parantheses so it will look like this:
+
+```
+if (a > 6) a = 2 * b;
+else a = 5 * b;
+```
+
+This is also the reason why the else-if-statement exists.
+
+### 5.1.6 Ternary conditionals
+
+You can use the ? operator for a so called **ternary conditional**:
+
+```
+COND ? IFTRUE : IFFALSE;
+```
+
+The IFTRUE code runs if COND is true, IFFALSE if COND is false. This can be used inline aswell:
+
+```
+a: i32 = 10;
+b: i32 = 11;
+c: i32 = a > b ? a : b; // If a is bigger than b, c is set to a, otherwise it's set to b
+```
+
+### 5.1.7 Switch-statements
+
+`switch`-statements allow for code to be checked conditionally through cases:
+
+```
+val: i32 = 12;
+switch<i32>(val) {
+  case 1: { println("it's 1 baby"); }
+  case default: { println("It ain't 1 baby"); }
+}
+```
+
+A case is just a shorted version of an else-if-statement, though the `{}` remain. Using `break;` allows you to break out of the switch.
+
+A `switch`-statement is built like this:
+
+```
+switch<type> (VAR) {
+  CASES
+}
+```
+
+`type` has to be set to the type of the values used in the cases. Using a different type for `VAR` or the cases will result in casting. If casting fails, an exception is thrown.
+
+A case itself is built like this:
+
+```
+case VAL: { CODE }
+```
+
+Important to note is that `VAL` can actually be a variable, as long as the type family is the same (for casting).
+
+`CODE` can be any kind of statement code, following the same rules as if-statement code.
+
+`switch` is also compatible with objects and containers.
+
+​
+
+If a switch cannot find a case that evaluates to `true` for `VAR`, it will simply do nothing. To allow a `switch`-statement to run code on any value of `VAR`, regardless of wether a case evaluated to `true`, use `case default:`. This is called the default case, and its code runs no matter if any case evaluated to `true`:
+
+```
+a: i32 = 21;
+switch<i32> (a) {
+  case 1: { println("Hi"); }
+  case default: { println("Bye..."); }
+}
+/*
+ * This switch statement will print:
+ * * Bye...
+ * if a is not 1.
+ * If, however, a is 1, it will print:
+ * * Hi
+ * * Bye...
+*\
+```
+
+To have a case that only runs if no case evaluates to `true`, you can use the fail case `case fail:`:
+
+```
+print("Give me an integer: ");
+txt: str;
+getInput(txt);
+println("");
+a: i32 = parseToi32(txt);
+switch<i32> (a) {
+  case 1: { println("You gave me a 1 bro?"); }
+  case default: { println("Alright..."); }
+  case fail: { println("no 1 bro?"); }
+}
+```
+
+Because the default case runs everytime, the fail case ignores it.
+
+The position of the default and fail case matter as well, as cases run top to bottom. So if you put the default case at the very start in above example, instead of printing:
+
+```
+You gave me a 1 bro?
+Alright...
+```
+
+If a is 1, it would print:
+
+```
+Alright...
+You gave me a 1 bro?
+```
+
+This only count for the default and fail case, though.
+
+## 5.2 Loops
+
+### 5.2.1 The while-loop
+
+The while loop executes a block of code CODE as long as a given condition COND evaluates to true:
+
+```
+while (COND) {
+  CODE
+}
+```
+
+Note, however, that while can also have any boolean term as a condition, including true (infinite loop) and false (never started loop).
+
+### 5.2.2 Stopping loops prematurely
+
+You can use the `break` keyword to end a loop like a while-loop:
+
+```
+while (true) { // Repeat forever
+  if (a > b) break; // ...but stop the loop if a is bigger than b
+}
+```
+
+### 5.2.3 The for loops
+
+The for loop executes a block of code a number n of times. This is the base syntax for the for loop:
+
+```
+for (VAR; COND; STEP) {
+  CODE
+}
+```
+
+Where VAR is either replaced by a new variable definition or an already existing variable, COND is a condition checked before every loop and STEP is how the variable changes every loop.
+
+Example of printing numbers 1 to 10:
+
+```
+for (i: i32 = 1; i < 11; i++) {
+  println(i);
+}
+```
+
+This can be seen as a while loop:
+
+```
+i: i32 = 1;
+while (true) {
+  println(i);
+  i++;
+  if (i >= 11) break;
+}
+```
+
+Or as this while loop:
+
+```
+i: i32 = 1;
+while (i < 11) {
+  println(i)
+  i++;
+}
+```
+
+### 5.2.4 Second variation of a for loop
+
+For loops have 3 variations, the second one looks like the following:
+
+```
+for (VAR => MAX; STEP) {
+  CODE
+}
+```
+
+Here, MAX is the maximum value reached. To better visualize this, here is the same for loop in both known variations:
+
+```
+for (i: i32 = 0; i < 11; i++) { println(i); }
+
+for (i: i32 = 0 => 10; i++) { println(i); }
+```
+
+If the step is negative, the for loop will either have to have a MAX set below the starting value or it will end in an infinite loop.
+
+MAX can also be any type of number, but depending on the type VAR is, MAX could end up being casted to the other type in compile-time for increased performance.
+
+### 5.2.5 The third variation of for loops
+
+The third variation of for loops allows for much more freedom in ranges:
+
+```
+for (VAR => INTERVAL STEP) {
+  CODE
+}
+```
+
+Here, VAR is not given a start value, instead INTERVAL is used as a mathematical interval:
+
+```
+[0; 10]
+/*
+[ -> start value included in the range (0)
+] -> end value included in the range (10)
+So, the range is 0 => 10
+*/
+]0; 10[
+/*
+] -> start value excluded from the range (0)
+[ -> end value excluded from the range (10)
+So, the range is 1 => 9 or any floating-point x with 0 < x < 10
+*/
+```
+
+Here is the same for loop in all variations:
+
+```
+for (i: i32 = 0; i < 21; i++) { println(i); }
+
+for (i: i32 = 0 => 20; i++) { println(i); }
+
+for (i: i32 => [0; 20] i++) { println(i); }
+```
+
+The same casting rules apply to the interval values as to MAX from the second for-loop variation.
+
+# 6 Methods
+
+## 6.1 The basic method
+
+### 6.1.1 Method structural syntax
+
+Unlike most langauges, ECY methods have a hanging return type for methods, as seen in the method syntax:
+
+```
+NAME (PARAMS) -> RETURNTYPE {
+  CODE
+}
+```
+
+You can use the `return` keyword to return a value if it's type is equal to the return type.
+
+### 6.1.2 Calling methods
+
+Say we have a method named PrintHi():
+
+```
+PrintHi() -> void {
+  println("Hi");
+}
+```
+
+To now call this method, we can use the method calling syntax:
+
+```
+NAME(INPUTPARAMS);
+```
+
+So, in this example, given PrintHi() has no parameters, we can call it via `PrintHi();`.
+
+### 6.1.3 Method parameters
+
+Method parameters work exactly like in other languages, though unlike normal ECY variable definitions, for ease of use and readability ECY allows type-first defining for parameters:
+
+```
+Foo(i32 a, b: i32) -> void {
+  a += b;
+}
+```
+
+By giving parameters a initialization value, they have default values. Mind that default parameters (parameters with default values) must follow after normal parameters.
+
+```
+Foo(i32 a, i32 b = 10) -> void {
+  a += b;
+}
+
+Foo(10, 5); // Called with new value for b
+Foo(10); // Called without new value for b, so b uses its default value of 10
+```
+
+### 6.1.4 Method overloading
+
+Methods in ECY can be overloaded by using the same name with different parameters, where wether or not a parameter is default is ignored, so only the existence of different parameters is important:
+
+```
+Foo(i32 a, i32 b) -> void {
+  a += b;
+}
+Foo(i32 a, i32 b, i32 c) -> void {
+  a += b + c;
+}
+
+Foo(10, 5);
+Foo(15, 10, 5);
+```
+
+## 6.2 Method inheritance
+
+### 6.2.1 The idea behind method inheritance
+
+As an idea, method inheritance solves a problem seen in many APIs, being that API methods are always behind curtains and cannot be expanded on by being behind those curtains, often times even copyrighted. While method inheritance doesn't expose method contents, it exposes the ability to expand on a method, allowing for “patchwork methods”, methods made by glueing new pieces to a framework method, called the Supermethod.
+
+### 6.2.2 How method inheritance works
+
+```
+Super() -> void { print("Hello, World!"); }
+```
+
+Say we have this method Super() and it's protected through the usual closed API safety measures, including obfuscation, anti-decompilation writing and such. We can still expand on Super() by creating a new submethod and expanding Super() through it, done through the `sub` keyword. The submethod will also inherit all parameters, modifiers and the return type from the supermethod.
+
+```
+sub SuperWithNewLine() <- Super() [
+pre {
+
+}
+post {
+
+}
+]
+```
+
+You might notice the weird way a submethod is built, following the structure of property fields, which will be explained thoroughly in later chapters. Important to know is that inside the pre-property comes all code to be placed before the original supermethod code, inside the post-property all code to be placed after.
+
+Also, any return that would render post \{} redundant will be replaced by a special \_ret variable assigned to the return with the correct type from context.
+
+Here is an example to explain this concept visually:
+
+```
+Sum(i32 a, i32 b) -> i32 {  
+  return a + b;
+}
+
+sub SumPrint(i32 a, i32 b) <- Sum(i32 a, i32 b) [
+  pre {}
+  post {
+    println(_ret);
+    return _ret;
+  }
+]
+```
+
+Keep in mind that \_ret is a reserved keyword in the ECY language, so \_ret will always be used as the original return of the supermethod inside the post-property. However, inside the pre-property, assignments to the \_ret variable can still be done, even though this will never have effect on the post-property of the submethod. If the return type is void, \_ret cannot be pinged as there is no return made by the supermethod with a value, instead the original redundating returns of the supermethod are simply removed.
+
+The pre-property and the post-property can also be left empty, however the post-property of a non-void method always has to end in `return _ret;` or any other returned value of choice, literal, variable, or \_ret.
+
+## 6.3 Method Generics
+
+### 6.3.1 The given generic
+
+In ECY, you can use the `given` generic as a new way of doing generics in method parameters:
+
+```
+Sum(given a, given b) -> given {}
+```
+
+This method head uses the `given` generic, allowing an argument of any type to be passed. This method is still only half of the full generic layout.
+
+### 6.3.2 Constraining
+
+To now actually use the `given` generic, a constraint must be set on the given type. This can be done using the `constrain` keyword:
+
+```
+Sum(given a, given b) -> given {
+  constrain given => FAMILY;
+}
+```
+
+FAMILY is to be replaced by either a specific type or a “type family”, which is like a generic for a type of primitives.
+
+You can use `familyOf()` to get the family of a certain primitive:
+
+```
+familyOf(i32); // Gives you the number family
+```
+
+This allows you to constrain `given` generics to type families like Text (`str`, `chr`, etc.), Number (`i32`, `f64`, etc.) and others.
+
+Not using constrain, however, is not possible with the `given` generic, which is to blame on the backend seeing `given` as a macro-replaced type, even though it technicallyis not.
+
+### 6.3.3 Free constraints
+
+The ECY `given` generic constraining still has more features, which includes the `free constrain`, which allows you to constrain with automatic casting and text-parsing to the correct family or type, where the type used in `familyOf()` is the parsed-to type:
+
+```
+Print(given a) -> void {
+  free constrain given => i32; // Now non-i32 is casted to i32 and str or chr is parsed to i32 (on failure an exception is thrown)
+  println(a);
+}
+
+SecondPrint(given a) -> void {
+  free constrain given => familyOf(i32); // Same here -> while numbers are not casted, str and chr are parsed to i32 (because i32 is used in familyOf())
+  println(a);
+}
+```
+
+### 6.3.4 Embedded generic
+
+Since the `given` generic can lead to possible readability loss if no context is given to methods with `given` and `constrain`, ECY allows the use of **embedded generics**, which are useful to make generics more readable for users, but less readable for programmers (in some cases):
+
+```
+Sum<T>(T a, T b) -> T {
+  constrain given<T> => familyOf(i32);
+  return a + b;
+}
+```
+
+This solves the problem of the `given` generic being locked to `constrain` as the embedded generic is actually useable as a full generic.
+
+Also, the embedded generic can be named any amount of letters and digits long, but must start on a letter:
+
+```
+Sum<Number>(Number a, Number b) -> Number {
+  constrain given<Number> => familyOf(i32);
+  return a + b;
+}
+```
+
+### 6.3.5 Multiple embedded generics
+
+ECY allows the use of multiple embedded generics in a method like this, where every embedded generic must be named differently and constraints on a list of generics `[T1, T2, T3, ...]` can be done as `given<T1, T2, T3, …>`, sub-sets of the list like `given<T1, T2, T4>` or even per generic like `given<T5>`:
+
+```
+Sum<Number1, Number2>(Number1 a, Number2 b) -> Number1 {
+  constrain given<Number1, Number2> => familyOf(i32);
+  return (Number1)(a + b);
+}
+```
+
+## 6.4 Function variables
+
+### 6.4.1 The basics behind function variables
+
+In ECY, a method can be saved in a variable of type `function`. This variable will then act like the method it references and can be used to call the given method.
+
+This is done by setting the variable to a reference to the method. The method reference to a method `func()` is simply `func`.
+
+This way, a function can be called indirectly:
+
+```
+Add(i32 a, i32 b) -> i32 { return a + b; }
+add: function = Add;
+add(10, 5); // Calls Add(10, 5)
+```
+
+A function variable, by definition, cannot be assigned to a new method after intialization.
+
+To fix this, the function variable must have pre-defined parameter types like so:
+
+```
+Add(i32 a, i32 b) -> i32 { return a + b; }
+Sub(i32 a, i32 b) -> i32 { return a - b; }
+Mul(f32 a, f32 b) -> f32 { return a * b; }
+arith: function(i32, i32) = Add;
+arith(10, 5); // Calls Add(10, 5)
+arith = Sub;
+arith(10, 5); // Calls Sub(10, 5)
+arith = Mul; // Error! arith's parameter types are defined as (i32, i32), but Mul's parameter types are defined as (f32, f32)
+```
+
+### 6.4.2 Handling function variable returns
+
+When a function variable is called, the return value is lost. This is because function variable's bypass the stack internally through jumping. But, unlike normal functions, function variables can have a defined “catch variable”.
+
+This catch variable is where the resulting return of a function is saved, which then causes the function variable to act closer to a traditional function call. To define a catch variable, the `into` keyword is used:
+
+```
+Add(i32 a, i32 b) -> i32 { return a + b; }
+Sub(i32 a, i32 b) -> i32 { return a - b; }
+
+result: i32 = 0;
+arith: function(i32, i32) into result = Add;
+arith(10, 5); // 15 is saved into result
+arith = Sub;
+arith(10, 5); // 5 is saved into result
+```
+
+### 6.4.3 Handling function variable generics
+
+To include generics in a function variable, either given is used as a type for the method generic or the embedded generic is defined via `function<T1, T2, …>(T1, …, T2, …)`:
+
+```
+Add<Num from familyOf(i32)>(Num a, Num b) -> Num { return a + b; }
+
+add: function<T>(T, T) = Add;
+add(10, 5);
+```
+
+Unlike in the method definition for `Add`, the function variable `add` only needs to hint at the embedded generics positionally, but not by name or by constraint.
+
+To now catch the return of a function variable with generics, the result must be of the special type `given*`, which works as a pointer to a function return, basically being a placeholder for any function return that then must be dealt with accordingly.
+
+The catch variable will also automatically point to the correct type that was returned, accessed via `*NAME`. A `given*` catch variable is also immutable and must be stored in the correct return type to be able to be written into.
+
+```
+Add<Num from familyOf(i32)>(Num a, Num b) -> Num { return a + b; }
+
+result: given*;
+add: function<T>(T, T) into result = Add;
+add(10, 5); // 15 is stored in result (i32)
+println(result); // Crash, result is a placeholder
+println(*result); // 15
+*result = 10; // Crash, result and *result are immutable
+res: i32 = *result; // given* is always by copy when stored in another variable
+res = 10;
+```
+
+### 6.4.4 What not to do
+
+ECY can crash from function variables if they're not dealt with accordingly. Here is what not to do:
+
+* Call a null function variable: Falls under `NullPointerException`. Because of this a function variable always has the base value `null`, which can be tested for.
+* Print a function variable: Falls under `FunctionAttemptParseException`. Because of the ambiguity of how printing a function should look it is impossible to print one. For function generics, this is dealt with by ECY during compilation by skipping over print instructions on function variables when inputted into a generic method.
+
+# 7 Objects
+
+## 7.1 The Struct
+
+### 7.1.1 Creating a struct
+
+Creating a `struct` in ECY follow a simple syntax inspired by most programming languages:
+
+```
+struct NAME { BODY }
+```
+
+Inside the brackets of the struct syntax fields are put. This is where modifiers mainly come into play and have the biggest effect on a field's visibility and accessibility.
+
+The fields in a struct work either as shared variables for every instance (+S) or as per-instance variables (-S).
+
+Here is an example of a basic Complex struct:
+
+```
+struct Complex {
+  real: f32;
+  img: f32;
+}
+```
+
+### 7.1.2 General modifiers in fields
+
+The general field modifiers are `public`, `private`, `protected`, and `static`, the effects will be explained in following sub-chapters.
+
+### 7.1.3 The public modifier
+
+Example of using the `public` modifier on a field inside a struct:
+
+```
+struct Complex {
+  public real: f32; // Visible outside this scope
+  img: f32; // Not visible outside this scope
+}
+```
+
+The `public` modifier enables the Visible State (V State) of a field/variable (as seen in 1.6.1) and in structs it allows the field to be accessed from outside the struct's brackets. Without the `static` modifier, an instance of the struct is needed for the field to be accessed.
+
+### 7.1.4 The private modifier
+
+Example of using the `private` modifier on a field inside a struct:
+
+```
+struct Complex {
+  public real: f32; // Visible outside this scope (public)
+  private img: f32; // Not visible outside this scope (private)
+}
+```
+
+The `private` modifier disables the V State of a field/variable (as seen in 1.6.1) and in structs it prohibits a field from being accessed from outside the struct's scope. Same as `public`, an instance is required without the use of `static`.
+
+### 7.1.5 The protected modifier
+
+Example of using the `protected` modifier on a field inside a struct:
+
+```
+struct Complex {
+  protected real: f32; // Not visible outisde this struct's and its children's scopes (private)
+  public img: f32; // Visible outside this struct's and its children's scopes (public)
+}
+```
+
+The `protected` modifier “protects” a field of a struct. This makes it unavaiable outside the struct or any of it's children, more about which you can find in Chapter 4.3.
+
+### 7.1.6 The static modifier
+
+Example of using the `static` modifier on a field inside a struct:
+
+```
+struct Complex {
+  public static real: f32;
+  public img: f32;
+}
+Complex.real; // Works
+Complex.img; // Does not as non-static fields require an instance
+```
+
+The `static` modifier marks a field as “static” and “shared”, making all instances of the struct point to the same memory address if the field is accessed. Static fields can be accessed via instances.
+
+A static field can also be accessed without an instance using this syntax, given Name as the name of any struct definition and StaticField to be any static field within said definition:
+
+```
+Name.StaticField;
+```
+
+### 7.1.7 Creating struct instances
+
+ECY allows for the creation of instances from any struct definition using following syntax:
+
+```
+StructName Name = new Constructor();
+```
+
+Constructor() is any of the constructors of the given struct.
+
+A constructor is a special method inside a struct used to initalize a newly created instance with given parameters. ECY automatically creates two types of constructors: Identity and Full.
+
+Any constructor is made using this syntax:
+
+```
+struct MyStruct {
+  public construct MyStruct() {}
+}
+```
+
+Every field of a struct must be initialized either directly in the field definition or in a constructor, which is why constructors come in three flavors:
+
+1. Identity Constructor
+
+The identity constructor sets every field to either its default value or null (the nothing value).
+
+```
+struct Complex {
+  public real, img: f32;
+  public construct Complex() {
+    real = 0;
+    img = 0;  
+  }
+}
+```
+
+2. Shaped Constructor
+
+A shaped constructor sets only a certain amount of fields and sets the other to default or null.
+
+```
+struct Complex {
+  public real, img: f32;
+  public construct Complex(f32 _img) {
+    real = 0;
+    img = _img;  
+  }
+}
+```
+
+3. Full Constructor
+
+The full constructor sets every field.
+
+```
+struct Complex {
+  public real, img: f32;
+  public construct Complex(f32 _real, f32_img) {
+    real = _real;
+    img = _img;  
+  }
+}
+```
+
+So, for a struct like this:
+
+```
+struct A {
+  public a: f32;
+    
+  public construct A(f32 _a) {
+    a = _a;
+  }
+}
+```
+
+An instance is created like:
+
+```
+A myA = new A(15);
+A myA2 = new A(); // This is the Identity Constructor auto-generated by ECY if not defined but used
+```
+
+### 7.1.8 Struct instance methods
+
+In ECY, a `struct` can have so-called **instance methods** defined inside of them.
+
+An instance method is a faster way to call methods with `struct` instances. Normally, a non-instance methods working on a `struct` instance looks like this:
+
+```
+struct A {
+  public a: f32;
+  public construct A(f32 _a) {
+    a = _a;
+  }
+}
+
+PrintValue(A instance) -> void {
+  println(instance.a);
+}
+```
+
+By moving this method inside the `struct` body, you can call it directly from an instance. This also removes the need for a reference, e.g. the parameter `A instance` inside `PrintValue()` is a reference. Instead, the keyword `this` acts like a reference to the instance the method is called with inside the `struct` body:
+
+```
+struct A {
+  public a: f32;
+  public construct A(f32 _a) {
+    a = _a;
+  }
+  public PrintValue() -> void {
+    println(this.a);
+  }
+}
+```
+
+The `this` keyword is also avaiable inside constructors, allowing for the constructor parameters to be named like the `struct` fields:
+
+```
+struct A {
+  public a: f32;
+  public construct A(f32 a) {
+    this.a = a;
+  }
+}
+```
+
+## 7.2 The class
+
+### 7.2.1 Creating a class
+
+Like a struct is created using the `struct` keyword, a class can be created using its keyword - `class`. Important to know is that struct and class bodies can both contain virtually the same things while also being instanced equally, meaning their difference derives from how they are stored and handled:
+
+```
+public class MyClass {
+  a: f32;
+}
+```
+
+Unlike structs, class fields can be left without a modifier to have them default to whatever access modifier is applied to the class:
+
+```
+public class A {
+  a: f32; // Uses A's modifier - public
+  private b: f32; // Override A's modifier - private instead of public
+}
+```
+
+### 7.2.2 The difference between classes and structs
+
+Internally, ECY handles classes and structs as different types of data. A struct is by definition a custom data structure, making it an extension of the container definition, resulting in them being definable as data types, which is why structs are handled as data types by ECY, causing them to act like primitive data in code. This means structs as method parameters are passed **by-copy** and classes are passed **by-reference**.
+
+Resulting from this is that without a proper way to force **by-reference** and **by-copy**, ECY would break its most important rule: Opting-in. The solution to this is discussed in the following sub-chapter.
+
+Classes, however, are seen as objects by ECY, leading to them being passed **by-reference**. This is also due to the way class objects are stored, as structs are usually stack memory and classes are allocated in the heap.
+
+### 7.2.3 Forcing by-reference and by-copy in parameters
+
+ECY allows the use of the `&`-token placed against the type like `TYPE&` to force a parameter to be sent **by-reference**. For primitive data types and containers like the array, this causes the actual variable to be passed instead of a pointer or a copy of the value:
+
+```
+struct ABC {
+  public a, b, c: f32;
+}
+
+PrintA(ABC& obj) -> void {
+  println(obj.a);
+}
+```
+
+However, by using the `$`-token, you can force **by-copy**, which will always pass an argument as a copy. class or struct, or even primitive.
+
+```
+struct ABC {
+  public a, b, c: f32;
+}
+
+PrintDoubleABC(ABC$ obj) -> void {
+  obj.a *= 2;
+  obj.b *= 2;
+  obj.c *= 2;
+  println(obj.a + ", " + obj.b + ", " + obj.c);
+}
+```
+
+The `&`-token is resolved for literal values by allocation temporary memory for it.
+
+### 7.2.4 Embedded class generics
+
+A `class` in ECY can have generic types. These generics work like embedded method generics, just for classes:
+
+```
+public class myClass<T> {}
+```
+
+The embedded class generics can be used as placeholders in instance fields and methods. There can also be multiple generics for one class, following the naming rules of embedded method generics:
+
+```
+public class TwoNumbers<T1, T2> {
+  num1: T1;
+  num2: T2;
+}
+```
+
+Because unconstrained embedded generics cannot be given values in any way, `constrain` works for embedded class generics using the `from` keyword in combination with `familyOf()`:
+
+```
+public class GenericNumber<T from familyOf(i32)> {
+  num: T;
+}
+```
+
+The same conversion rules apply to the `from`-construction as to the `constrain`-construction in methods.
+
+In the class constructor, the generics do not need to be repeated as embedded method generics. Instead, any embedded method generics for the constructor acts as entirely new generics:
+
+```
+public class Tuple<T1, T2> {
+  Item1: T1;
+  Item2: T2;
+  public construct Tuple(T1 Item1, T2 Item2) {
+    this.Item1 = Item1;
+    this.Item2 = Item2;
+  }
+}
+```
+
+When creating an instance of a class with embedded generics, you need to give actual types for the generics like this:
+
+```
+public class Tuple<T1, T2> {
+  Item1: T1;
+  Item2: T2;
+  auto construct Tuple(T1 Item1, T2 Item2) {}
+}
+Tuple<str, i32> myTuple = new Tuple("Hi", 42);
+```
+
+As visible, calling the constructor of a class with embedded generics does not require giving types for the generics. If the constructor has its own embedded method generics, those need to be given an actual type:
+
+```
+public class Tuple<T1, T2> {
+  Item1: T1;
+  Item2: T2;
+  public construct Tuple<T3>(T1 Item1, T2 Item2, T3 Print) {
+    this.Item1 = Item1;
+    this.Item2 = Item2;
+    println(obj2str(Print));
+  }
+}
+Tuple<str, i32> myTuple = new Tuple<str>("Hi", 42, "Created new Tuple");
+```
+
+## 7.3 Operator Overloading
+
+### 7.3.1 Getting started with operator overloading
+
+Internally, ECY handles operators like a special function - and as one knows, a method can be overloaded, hence why the operator method can be overloaded for both structs and classes. The basic syntax for an operator being converted to a method call is:
+
+```
+a + b;
+=>
+a.operator+(b);
+```
+
+To actually overload this function, you create a function named `operator?`, where `?` is replaced by the operator of choice and where there is, depending on wether the operator is binary, a parameter resembling the right operand (in above case `b`) and a non-void return type for what type the operation equals to. Operator overloading, however, only works within object definitions:
+
+```
+struct A {
+  public a: f32 = 0;
+  
+  public construct A(f32 a) {
+    this.a = a;
+  }
+  public operator+(A b) -> A {
+    return new A(this.a + b.a);
+  }
+}
+```
+
+You can also overload unary operators by not adding a parameter.
+
+## 7.4 Unified & multiplex
+
+### 7.4.1 Unified structs
+
+A `unified struct` is a special struct in ECY that allows you to place struct fields onto the same memory address but as different types:
+
+```
+unified struct ABC {
+  public a: f32;
+  public b: i32;
+  public c: d32;
+}
+```
+
+But, like this all the fields are still on different memory addresses. Instead, the `unify` keyword actually unifies and sets the memory addresses of the following values equal:
+
+```
+unified struct ABC {
+  public a: f32;
+  public b: i32;
+  public c: d32;
+  unify a, b;
+}
+```
+
+The `unify` keyword can be applied to multiple fields more than once per struct, but only once per field.
+
+### 7.4.2 Multiplex structs
+
+Multiplex structs are a runtime alternative to unified structs that allow structs fields to carry the same values, but different memory addresses.
+
+To create one, you use the `multiplex` keyword and instead of `unify` use `plex`:
+
+```
+multiplex struct MyPlexed {
+  public a, c, e: f32;
+  public b, d, f: i32;
+  plex a, b;
+  plex c, d;
+  plex e, f;
+}
+```
+
+### 7.4.3 Multiplex classes
+
+Unlike structs, classes cannot have unified components as class fields are direct values and struct field behave like pointer to themself living in stack (hence why unifying works). To compensate, plexing inside multiplex classes is possible:
+
+```
+public multiplex class MyPlexedClass {
+  a: f32;
+  b: i32;
+  c: d32;
+  plex a, b, c;
+}
+```
+
+You can also plex class or struct references' fields inside a multiplex class, as plexing is runtime instead of compile-time:
+
+```
+public struct A {
+  public a: f32;
+}
+public struct B {
+  public b: i32;
+}
+public multiplex class AB {
+  public MyA: A;
+  public MyB: B;
+  plex A.a, B.b;
+}
+```
+
+## 7.5 Inheritance
+
+### 7.5.1 Struct inheritance
+
+When a struct inherits from another struct, it “inherits” the “parent's” fields, methods, operator overloads and constructors.
+
+The parent x of child y is known as the “superstruct x of substruct y” and vice versa.
+
+To create a struct that inherits from another, use the `<-`-operator on the struct:
+
+```
+struct A {
+  public a: f32;
+}
+struct B <- A {
+  public b: f32;
+}
+```
+
+A struct can inherit from multiple other structs:
+
+```
+struct A {
+  pubic a: f32;
+}
+struct B {
+  public b: f32;
+}
+struct C <- A, B {
+  public c: f32;
+}
+```
+
+If any field is found exactly the same in more than one superstruct, the substruct inherits the field only from the first given superstruct. In the case of methods, the same applies if parameters are equal, otherwise the ambigous methods become overloads of one another.
+
+```
+struct A {
+  public a: f32;
+}
+struct B {
+  public a: f32;
+}
+struct C <- A, B {} // Only inherits a from A as it's the first given
+```
+
+Unified and multiplex structs cannot inherit or be inherited from.
+
+### 7.5.2 Class inheritance
+
+Class inheritance is virtually the same as struct inheritance, but multiplex classes can inherit and be a superclass to multiplex subclasses:
+
+```
+public class A {
+  a: f32;
+}
+public multiplex class B <- A {
+  b: f32;
+  plex a, b;
+}
+```
+
+### 7.5.3 Template and override
+
+If needed, a class or struct field/method can be set as a template, making it not exist in the actual definition but can then be overridden like a blueprint in children. For this the `template` and `override` keyword is used. Templated methods also don't have a method body and end on a `;` instead of `{}`.
+
+```
+public class TemplateClass {
+  template a: f32;
+  template GetA() -> f32;
+}
+public class ChildClass <- TemplateClass {
+  override a: f32;
+  override GetA() -> f32 { return a; }
+}
+```
+
+Every templated field/method **must** be overridden in the child.
+
+To automatically flag every field/method as being a possible override, you can use `override` on the class itself:
+
+```
+public class TemplateClass {
+  template a: f32;
+  template GetA() -> f32;
+}
+public override class ChildClass <- TemplateClass {
+  a: f32;
+  GetA() -> f32 { return a; }
+}
+```
+
+## 7.6 Class and struct body properties
+
+### 7.6.1 get and set property
+
+To control the behaviour of a field when accessed or assigned, ECY allows a custom get-function and set-function to be defined using the get-set-property. The syntax of which is:
+
+```
+FIELD [
+get { CODE; }
+set { CODE; }
+]
+```
+
+Inside the get-property, there must be one and only one return of a value of equal type to the field's type. Inside set, you can do whatever you wish to, except for returning a value as set is a code block and get is more like a condensed getter method.
+
+ECY allows the field itself to be used inside the get-set-property without any issues or hidden backing fields by just ignoring the getter and setter on a field inside its own getter and setter:
+
+```
+public class Date {
+  day: i32;
+  month: i32;
+  year: i32;
+  public construct Date(day: i32, month: i32, year: i32) { this.day(day); this.month(month); this.year(year); }
+}
+time: Date = new Date(23, 1, 2026);
+public class Birthdate <- Date {
+  age: i32 [
+  get {
+    if (this.month >= time.month && this.day >= time.day)
+      return time.year - this.year;
+    else
+      return (time.year - this.year) - 1;
+  }
+  ]
+}
+```
+
+If a field does not have a setter, it's value cannot be set. If it does have a setter, the `value` keyword is a reference to the given set value.
+
+### 7.6.2 Struct return property
+
+ECY allows struct instances to be used like a variable using the **return property**. This special property field follows the following syntax:
+
+```
+struct SomeStruct {
+  return { CODE } => ReturnedValue;
+}
+```
+
+Now using a SomeStruct instance as a variable will instead run CODE inside the return property and then return ReturnedValue as the value the as-variable-used instance is then replaced by in runtime. Any variables defined in CODE are also scopeable by ReturnedValue.
+
+A struct without a return property can simply not be used as a variable from an instance.
+
+## 7.7 Extending objects
+
+### 7.7.1 Extension and extendable
+
+In ECY, the definition of a class or a struct can be split into multiple smaller sud-definitions called extensions. For both compile-time performance and safety reasons, only objects marked with `extendable` can be extended.
+
+Extensions themselve are their own object type `extension<objtype>`, where `objtype` is replaced by either `struct` or `class`.
+
+Here is an example of splitting a struct definition:
+
+```
+extendable struct AB {
+  public a: f32;
+}
+extension<struct> AB {
+  public b: f32;
+}
+```
+
+There are two rules one must follow to extend an object
+
+* The object must be findable in scope, wether via imported libraries or namespace access
+* The extension\<> X of extendable object Y must also be named Y to extend extendable object Y – in short, the name of the extension and the extended object must match
+
+## 7.8 Automatic functionality
+
+### 7.8.1 The auto constructor
+
+Using the `auto` keyword combined with `construct` assigns the compiler to automatically create a constructor for the fields defined in the parameter list. This is to make creating big data objects less time-consuming:
+
+```
+public class MyClass {
+  a, b, c, d: f32;
+  auto construct MyClass(f32 a, f32 c) {} // Creates a shaped constructor for a and c
+}
+```
+
+### 7.8.2 Operate keyword
+
+The `operate` keyword signals the compiler to create automatic component-wise instance-to-instance operator overloads for a field in combination with all other operate fields:
+
+```
+struct Vector2 {
+  operate public x, y: f32;
+  auto construct Vector2(f32 x, f32 y) {}
+}
+// The shortest functional Vector2 ever conceived
+```
+
+### 7.8.3 Require keyword
+
+The `require` keyword solves the ambiguity of instance-in-instance references by allowing the user to specify which fields cannot be stripped from an instance under any and all circumstances:
+
+```
+import <emath>; // Ignore for now
+
+struct Vector2 {
+  operate require public x, y: f32;
+  public magnitude: f32 [
+    get { return sqrt(x*x + y*y); }
+  ]
+  auto construct Vector2(f32 x, f32 y) {}
+}
+// Even shorter for the amount of functionality in this thing
+```
+
+## 7.9 Object conversion
+
+### 7.9.1 Struct conversion
+
+ECY allows substructs to be converted into objects of the type of one of their superstructs. This makes it possible to have an array of instances of the superstruct and fill it with instances of the substructs.
+
+Converting a struct instance of type A into a struct instance of type B returns a copy of that struct, but converted to type B.
+
+### 7.9.2 Class conversion
+
+Classes also follow the same rules as structs in conversion, though converting a class instance of type A to a class instance of type B will return a reference to A interpreted as an internal pointer of type B\*, which can be used like a usual instance of type B without requiring or allowing its use as a pointer.
+
+# 8 Code Handling
+
+## 8.1 Special Keywords
+
+### 8.1.1 Volatile
+
+Marks a variable or field as **not optimizable**, prompting the compiler to not optimize any usage of the variable.
+
+The exact optimizations not performed are:
+
+* Register allocation: Saving a locally scoped not top-level variable in a register if only used and defined inside that small scope (like a function body)
+* Compile-time calculations: Pre-calculating mathematical expressions with constant results
+* Shadowing variables: Not creating a variable if its value is constant and its defined only inside a small scope, instead using direct literals
+* Dead-Code elimination: Not compiling unused variables or variables at dead ends. This does not contain dead-code elimination after return statements
+
+### 8.1.2 Require
+
+\[This keyword acts differently on fields]
+
+Instructs the compiler to allocate memory on the stack for the given variable, regardless of memory optimizations the compiler would perform on it. Works like `volatile` but keeping performance optimizations that don't optimize memory usage from storing variables in the stack instead of registers.
+
+If used on an object instance, heap memory is allocated instead, unless for structs which are stack-allocated instead.
+
+### 8.1.3 Sync
+
+Forces a variable to sync itself along threads as good as possible. This makes it possible to force thread safety even on lower levels of optimization.
+
+### 8.1.4 Unlock
+
+Marks a variable as **memory important**, causing the GC to wait until the very last possible second to dispose of it. Pointers are unlocked by nature while safe pointers are not, making `unlock` incompatible with pointer variables.
+
+### 8.1.5 Trash
+
+Marks a variable as **temporary**, making the GC dispose of it the moment the current scope is left. This also works in the top-level, where instead the GC disposes of a `trash` variable right after the last usage of it (baked into the assembly).
+
+### 8.1.6 Const
+
+Marks a variable defined inside a function or loop-statement as **constant**, making the Compiler allocate it to the stack and use the same variable everytime the function is called. This effectively works like a static field for a function without the ability to reference it outside the function's scope.
+
+Function variables cannot be marked as `static`, hence why `const` is the less versatile but more fitted alternative.
+
+### 8.1.7 New
+
+Marks a variable defined inside a function or loop-statement as to be **recreated** every call/repeat. This means that, opposite to `const`, the compiler will allocate new stack memory for the variable everytime it's defined. Incompatible with `const`.
+
+While the original allocation will get disposed of by the GC after some time, `new` is a way to avoid the problem of the Compiler “const-ing” variables automatically as an optimization.
+
+​
+
+If used on a field, method, constructor or operator overload inside an object inheriting from another, it will allow the redefinition of the given field, method, etc. if
+
+* The superobject's definition is marked with `template`
+* And the definition is not marked with `override`
+
+This makes it so when accessing the definition, it will use the redefinition, but if the subobject was converted into an object of the type of the superclass, it would use the original definition.
+
+### 8.1.8 Is
+
+Returns wether a variable `VAR` is of type `TYPE`. Only useable inside conditions or as a explicit boolean value.
+
+```
+num: i32 = 10;
+if (num is i32) println("Num is an integer"); // Always true as num IS an i32
+```
+
+## 8.2 Asynchronous code
+
+### 8.2.1 The go keyword
+
+Functions can be run asynchronous by using the `go` keyword. This will have them run in a background thread:
+
+```
+foo() -> void { println("Hi"); }
+
+go foo();
+println("Bye"); // Might print first, might not
+```
+
+### 8.2.2 The wait keyword
+
+The `wait` keyword allows for the halting of the current thread until a `go`-called method has completed. It also allows for getting the return of a `go`-called method without running into the danger of it haven't completed:
+
+```
+foo() -> void { println("Hi"); }
+
+go foo();
+println("What?");
+wait foo; // Without () or it would call foo()
+println("Bye");
+```
+
+Important to know is that with a method X doing `wait X()` will call the method on a background thread and immeadeately wait for it, useful for getting returns asynchronously, while `wait X` will halt until the last `go`-call of X to finishes.
+
+### 8.2.3 The async block (asynchronous expression / asyncexpr)
+
+The `async`-block allows for literal code to be called asynchronously. You can create them like a function but with `async` behind them:
+
+```
+async AddTwo(i32 a, i32 b) -> void {
+  a += b;
+}
+
+go AddTwo(5, 12);
+println("Adding numbers...");
+wait AddTwo;
+```
+
+## 8.3 Namespaces
+
+### 8.3.1 Creating a namespace
+
+In ECY, namespaces are created using the `namespace` keyword:
+
+```
+namespace MyNamespace {
+  a: f32;
+}
+```
+
+### 8.3.2 using keyword
+
+Using the `using` keyword allows you to remove the need to name a namespace when accessing a value from it, it effectively “opens” the namespace:
+
+```
+namespace A {
+  public a: i32 = 42;
+}
+using A;
+println(a); // Works now without A.a
+```
+
+## 8.4 Error Handling
+
+### 8.4.1 Try-catch-statement
+
+The try-catch-statement allows for the testing of code and “catching” of an exception. This allows you to avoid code crashes by handling errors before they can reach the actual program:
+
+```
+try {
+  CODE
+}
+catch (Exception e) { // e is an instance of an exception class
+  HANDLECODE
+}
+catch default { // Do this no matter what failed
+  DEFAULTHANDLECODE
+}
+```
+
+To avoid the burdon of having to create a catch for every possible exception, the `catch default` statement allows for general error handling to occur while the `catch (Exception e)` statement has a specified exception.
+
+Any try-statement must be followed by atleast one catch-statement. Furthermore, catch-statements for the same exception cannot be put together with the same try-statement, every catch-statement connected to the same try-statement must handle a different exception.
+
+Here is a list of basic exceptions:
+
+* `NullPointerException`: A pointer or variable was used that is of value `null` (nothing)
+* `InvalidOperationException`: General exception for any code operation that is invalid
+* `IndexOutOfRangeException`: A non-existent index of an container was accessed
+* `InvalidIndexException`: A variation of `IndexOutOfRangeException` thrown when a (by definition) invalid index was accessed, like a negative number, non-integer number or `null`
+
+### 8.4.2 Throwing exceptions manually
+
+ECY allows exceptions to be thrown by the user themselves via the `throw` keyword:
+
+```
+throw EXCEPTION;
+```
+
+`EXCEPTION` must be replaced by an instance of any exception. Every exception in ECY has the same constructors:
+
+```
+EXCEPTION(message: str);
+EXCEPTION(messgae: str, obj: Object);
+```
+
+This allows you to throw an exception manually:
+
+```
+a: i32;
+txt: str;
+getInput(txt);
+try {
+  a = parseToi32(txt);
+}
+catch (InvalidOperationException e) {
+  throw new InvalidOperationException("i32 expected in string");
+}
+```
+
+# 9 Compile-Time Code Handling
+
+## 9.1 Compiler handling via pragma
+
+### 9.1.1 What pragma does
+
+`pragma` is a pre-processor command like `import` (see “10 Accessing external ECY resources”) and is used to send instructions to the Compilation Program itself, where the Pre-Processor, Linker, and Compiler life.
+
+The syntax of a pragma-instruction looks like this:
+
+```
+pragma INSTRUCTION;
+```
+
+`INSTRUCTION` is to be replaced by a pragma-instruction.
+There are no Pre-Processor pragma-instructions as of now.
+
+`pragma` commands only affect the file they're written in.
+
+### 9.1.2 Compiler pragma-instructions
+
+Following is a list of basic Compiler pragma-instructions:
+
+* `setOp(lvl: freestr)`: Sets the optimization level of the compiler. Possible levels are: “O0” (none), “O1” (default), and “O2” (hyper-optimized).
+* `setAggr(lvl: freestr)`: Sets the aggression level of the compiler. Possible levels are: “A0" (exact compile), “A1” (default; basic optimization aggression), “A2” (hyper-aggressive), and “A3” (hyper-aggressive; allows the compiler to reorder code and inject auto constructors and operator overloads into the code file itself).
+
+### 9.1.3 Linker pragma-instructions
+
+Following is a list of basic Linker pragma-instructions:
+
+* `dependsOn(file: str)`: Marks the current file as **depending** on the given file. This causes the file at `file` to be automatically imported by the Linker. If the dependent-on file is not found, the Linker will throw an `MissingDependency` error.
+* `dependsOn(file: str, directive: str)`: Overload of `dependsOn(file: str)`. `directive` allows for the inclusion of a possible location the file can be found at or a website from which it can be downloaded from in the case of it missing in the project. The `MissingDependcy` error will also include the extra sentence “The missing file can be found at or downloaded from \\"`file`\\".”, where `file` is the string passed as `directive` in `dependsOn(file: str, directive: str)`.
+* `fileType(type: str)`: Sets the type of file the Linker should interpret the current file as. Not needed if the current file's type matches the file type the Linker should interpret it as. Possible file types are “ecy” (ECY Code File), “ecl” (ECY Library File), and “ech” (ECY Header File).
+
+# 10 Accessing external ECY resources
+
+## 10.1 Accessing resources
+
+### 10.1.1 Import
+
+Importing in ECY is the basic way to access external resources like headers or libraries. You do it via the `import` keyword and put the imported file into `<>`, where there is no need for the usage of `""` or the explicit input of the file type. A `;` at the end is required though:
+
+```
+import <emath>;
+
+
+println(sqrt(153)); // Example of emath
+```
+
+### 10.1.2 Implementing
+
+Sometimes, two libraries define the same thing. In this case, ambiguity can be avoided by using `implement` instead of `import`. `implement` acts as a namespace-wrapped import, instead of dumping all the contents of library or header xyz into the current file's scope, it creates a namespace xyz where all the contents are dumped into instead.
+
+```
+implement <emath>;
+
+println(emath.sqrt(153)); // This is the only way to use emath now
+```
+
+### 10.1.3 Custom namespace implement
+
+Using `implement <…> as NAMESPACE`, it's possible to use a custom name for dumping namespace implement uses:
+
+```
+implement <emath> as Math;
+
+println(Math.sqrt(153)); // A little better
+```
+
+### 10.1.4 Attempt import and implement
+
+In the case that a library or header is already imported/implemented, using `attempt` allows the coder to tell the linker to check if an import/implement is needed or another library or header already exposed the imported/implemented resources, acting as a safe-guard against linker-based performance isssues and ambiguity:
+
+```
+import <emath>; // Linker exposes emath
+...
+attempt import <emath>; // Linker does not expose emath as it's already exposed
+...
+implement <list> as Collections; // Linker exposes list into Collections
+...
+attempt implement <list> as Generic, // Linker does not expose list as it has either been already imported or implemented
+
+```
+
+## 10.2 Handling resources safely
+
+### 10.2.1 Distinct
+
+`distinct` allows you to solve ambiguity between an imported object and a currently defined object manually:
+
+```
+import <emath>;
+distinct PI emath.PI; // Now it distincts between PI and emath's PI by requiring emath's PI to be called as emath.PI
+
+PI: f32 = 3.14f; // Ambiguity error!
+```
+
+## 10.3 Removing built-in libraries
+
+Using the `export` keyword, imported built-in libraries like \<io> and \<list> can be removed from a file:
+
+```
+export <io>;
+
+println("Hi!"); // Error! println no defined
+```
+
+# 11 External resources
+
+## 11.1 Headers
+
+### 11.1.1 What headers are
+
+An ECY header file (short header, file type “.ech”) is an external ECY resource that allows you to define compile-time constants and objects & methods. Unlike a library, headers are just simple definition files, which require a lot less time to be compiled and linked and imported/implemented during Compilation.
+
+They also cannot import any data into themselves and they follow the idea of: “Compile Once. Import Anytime”.
+
+The basic layout of a header file is:
+
+```
+pragma fileType("ech"); // Optional, required if you're not using a .ech file to make a header
+
+public static answer: i32 = 42; // Everyone who imports this header has access to answer
+private static notTheAnswer: i32 = 42; // This is private, in the header context meaning it's only available to the header itself
+```
+
+Headers are also compiled seperately and only need to be recompiled if changes are made as they're basically just like normal “.ecy” code files, just with more versatile features like dependencies via pragma.
+
+### 11.1.2 Importing/Implementing custom headers
+
+Importing/Implementing a custom header file works exactly like importing a library or header normally:
+
+```
+import <NAME.ech>;
+```
+
+Here, `NAME` is to be replaced by the name of the custom header file without file type, that is what the `.ech` is needed for.
+
+## 11.2 Libraries
+
+### 11.2.1 What libraries are
+
+An ECY library file (short library, file type “.ecl”) is an external ECY resource that allows you to define compile-time constants and objects, methods, even import/implement other libraries and headers. This makes them take more time to be compiled and requires their recompilation when actually used to test for dependencies and check for Syntax errors or ambiguities and also resolve linking. That's because they're handled like special “.ecy” code files, and as such are able to access global namespaces & definitions, though that makes them hard-dependent on such.
+
+The basic layout of a library file is:
+
+```
+pragma fileType("ecl"); // Optional, required if you're not using a .ecl file to make a library
+
+public static answer: i32 = 42; // Everyone who imports this library has access to answer
+private static notTheAnswer: i32 = 42; // This is private, in the library context meaning it's only available to the library itself
+```
+
+### 11.2.2 Importing/Implementing custom libraries
+
+Importing/Implementing a custom library file works exactly like importing a built-in library:
+
+```
+import <NAME>;
+```
+
+Where `NAME` is to be replaced by the name of the custom library with or without the file type.
+
+# 12 Types & Generics
+
+## 12.1 Type System
+
+### 12.1.1 Creating custom types
+
+ECY allows the programmer to create custom types by using structs as “definition anchors”.
+
+These structs can hold multiple fields and static methods, but no instance methods. The requirement for a struct to act as a “definition anchor” is to have both a return property and an overload for the assignment operator:
+
+```
+public struct ComplexValue {
+  public img: f32;
+  public real: f32;
+  auto construct ComplexValue(f32 img, f32 real) {}
+}
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(ComplexValue$ b) -> void {
+    this = new Complex(b.img, b.real);
+  }
+  return { ComplexValue c = new ComplexValue(this.img, this.real); } => c;
+}
+```
+
+To now setup this “definition anchor” as a custom type, you use the `typedef`-construction:
+
+```
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(ComplexValue$ b) -> void {
+    this = new Complex(b.img, b.real);
+  }
+  return { ComplexValue c = new ComplexValue(this.img, this.real); } => c;
+} typedef complex => Complex;
+```
+
+This makes `complex` act like a type version of the `Complex` struct.
+
+`typedef` must also follow right after the definition of the “typified” struct, though it can have a new line between it and the struct.
+
+Because creating a new struct instance every call of a custom type can be overwhelming for a cpu to handle, definition anchors can use the special “definition anchor return property”:
+
+```
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(complex$ b) -> void { // ComplexValue not needed anymore since with "return => this;" every Complex and complex returns itself
+    this = new Complex(b.img, b.real);
+  }
+  return => this; // Now returns a complex (the custom type)
+} typedef complex => Complex;
+```
+
+The definition anchor return property is always structured as `return => this;` and makes the custom type act as a reference to itself when referenced according to the rules of the usual return property.
+
+The definition anchor return property is reserved for definition anchors.
+
+The rules of what makes a struct a definition anchor are:
+
+* No instance methods
+* No shaped constructors
+* Full constructor
+* Overload for the assignment operator (‘=’)
+* Return property
+* Connected `typedef`-construction
+
+### 12.1.2 Using custom types
+
+A custom type made from a definition anchor can be used like a usual type, not requiring any kind of constructors or `new`-usage:
+
+```
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(ComplexValue$ b) -> void {
+    this = new Complex(b.img, b.real);
+  }
+  return => this;
+} typedef complex => Complex;
+complex num;
+num.img = 10; // Sets img of custom complex variable to 10
+```
+
+Behind the scenes, custom type variables are still handled like structs with the difference of them being able to be constrained on and work for generics, but also have custom conversion rules.
+
+### 12.1.3 Cast overloading
+
+To allow custom types to be more versatile in ECY so-called “Cast Overloading” can be performed to define custom rules for converting to different types.
+
+The syntax of a cast overload are as follows:
+
+```
+CASTVERSION<type>() -> type {}
+```
+
+In a cast overload, `CASTVERSION` is the type of casting in question. There are different kinds of casts, more to them later. `type` is to be replaced by the type being converted to.
+
+### 12.1.4 Types of casts
+
+Casts in ECY have different “types” to them. This is because, depending on context and the given types, ECY might perform a different set of casting steps on different casts.
+
+While ECY automatically detects the most optimal cast during compilation, using the `VAR1 = CASTVERSION<CASTTYPE>(VAR2);` syntax allows the programmer to force a certain type of cast to be used in the given conversion. `VAR1` is the variable being assigned the converted value, `CASTVERSION` is to be replaced by the wanted type of cast, `CASTTYPE` is the type being converted into, and `VAR2` is the variable or value converted into `CASTTYPE`.
+Just like with normal casting, casting explicitly using an explicit type of cast doesnt change `VAR2` in any way and instead just returns `VAR2` interpreted as `CASTTYPE`.
+
+If a type of cast is used on a conversion that cannot be done with the given type of cast, the compiler will instead use the most optimal type of cast on the conversion.
+
+There are multiple casting types defined in ECY, where only a few are defined in the pre-imported `<std>` library:
+
+* `ConstCast<type>()`: Compile-time conversion instead of runtime conversion.
+* `DynamicCast<type>()`: Runtime conversion.
+* `InstanceCast<type>()`: Runtime conversion for struct and class instances. Only useable to convert between structs/classes.
+* `AnyCast<type>()`: Placeholder for any casting type. Only useable for cast overloading.
+
+There are more casting types defined in other libraries. Following is an example of a built-in ECY library that contains more casting types:
+
+`<numerics>`:
+
+* `NumericCast<type>()`: Casting type optimized and only available for primitive number types.
+* `IntegerCast<type>()`: Casting type optimized and only available for primitive integer types.
+* `DecimalCast<type>()`: Casting type optimized and only available for primitive fixed- and floating-point decimal types.
+* `FloatingCast<type>()`: Casting type optimized and only available for primitive floating-point decimal types.
+
+Here is an example of using cast overloads with the above explained casting types in a definition anchor:
+
+```
+public class Tuple<T1, T2> {
+  Item1: T1;
+  Item2: T2;
+  auto construct Tuple(T1 Item1, T2 Item2) {}
+}
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(ComplexValue$ b) -> void {
+    this = new Complex(b.img, b.real);
+  }
+  public AnyCast<Tuple<f32, f32>>() -> Tuple<f32, f32> {
+    return new Tuple<f32, f32>(img, real);
+  }
+  return => this;
+} typedef complex => Complex;
+
+complex num;
+Tuple<f32, f32> myPair = num;
+```
+
+### 12.1.5 Setting type families for custom types
+
+To make `constrain`, `given`, and custom types work together perfectly, ECY allows a `typedef`-construction to be given a type family.
+
+This can be done by using `typedef<FAMILY>` instead of just `typedef`, where `FAMILY` is the family the custom type is a part of:
+
+```
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(ComplexValue$ b) -> void {
+    this = new Complex(b.img, b.real);
+  }
+  public AnyCast<Tuple<f32, f32>>() -> Tuple<f32, f32> {
+    return new Tuple<f32, f32>(img, real);
+  }
+  return => this;
+} typedef<familyOf(i32)> complex => Complex;
+```
+
+By just using `typedef`, the custom type's family will be the `CustomFamily` family. The `CustomFamily` family cannot be converted from or to and any custom type defined under it cannot be converted into any of the other custom types defined under it.
+
+### 12.1.6 Type families
+
+Below is a list of the ECY type families defined under `<std>`:
+
+* `NumericFamily`: Family for numerical types
+* `TextFamily`: Family for text-based types (including `chr` types)
+* `BooleanFamily`: Family for boolean types
+* `PointerFamily`: Family for pointer types; Does not contain non-pointer types appended with `*`
+* `GenericFamily`: Family for generic types; Does not allow from, to, and cross conversion
+* `CustomFamily`: Family for custom types; Does not allow from, to, and cross conversion
+* `StructFamily`: Family for struct definitions; Does not contain custom types
+* `ClassFamily`: Family for class definitions
+
+### 12.1.7 Calling constructors on custom types
+
+To make value assignment for custom types faster, they can be reassigned and intialized using their constructors like:
+
+```
+name(/* Constructor stuff */); // Assignment
+name: customtype = customtype(/* Constructor stuff */); // Initialization
+```
+
+When using the constructor for assignment, the `operator=` is used, hence why `=` has to be overloaded for every definition anchor.
+
+For creating instances of custom types via the constructor, unless for a named variable, the constructor has to be preceeded by a `new`:
+
+```
+new complex(10.3f, 5f); // Trailing (managed) instance of complex type is created
+```
+
+## 12.2 Generics
+
+### 12.2.1 Custom Generic Types
+
+Generics in ECY can come in two flavors, those being:
+
+* Embedded: Generics embedded into methods and classes
+* Defined: Generics defined as types
+
+Custom generic types fall under defined generics and allow for a placeholder type for a type family to be defined as a custom type themselves.
+
+Unlike usual types, defined generic types cannot be used to define variables, instead they are to be used as a pre-constrained embedded generic in both classes and methods.
+
+### 12.2.2 Creating defined generic types
+
+Creating a defined generic type is as easy as setting up a collection of families and naming them using the `generic`-construction:
+
+```
+generic NumberAndText = {familyOf(i32), familyOf(str)};
+```
+
+In above example, a new generic `NumberAndText` is defined as a placeholder for both `NumericFamily` and `TextFamily`.
+
+Note that this:
+
+```
+txtornum: NumberAndText = "Hi";
+```
+
+Is not possible as defined generic types are only (like said) placeholders for handling type strictness at runtime - not compile-time.
+
+But, for a method that takes in both text and numbers, using defined generic types is a way to avoid embedding generics:
+
+```
+Print(NumberAndText input) -> void {
+  println(input); // Allowed as both NumberFamily and TextFamily are printable!
+}
+```
+
+# 13 Data Containers
+
+## 13.1 Basics
+
+### 13.1.1 Collections
+
+In ECY, collections are a type-less grouping of data inside `{}` and are created via the `collection` type:
+
+```
+numbers: collection = { 10, 5.5d, 0.9f, "Im not a number?" };
+```
+
+Internally, collections are handled as a list of pointers. Important to know is that a collection can be indexed using `[]`:
+
+```
+print(numbers[2]); // Prints 0.9 (the third element, index starts at 0)
+```
+
+Collections are also of fixed-length, given by the amount of data they're initialized with.
+
+If a collection element is used in the wrong context (e.g. numbers\[4] is put into an i32), a `TypeMismatchException` will be thrown at runtime.
+
+Collections can also be created of a custom length by using `new collection[LEN]`. `LEN` can either be an `i32` literal or a variable of type `i32`:
+
+```
+numbers: collection = new collection[5]; // collection with 5 elements
+a: i32 = 15;
+values: collection = new collection[a]; // collection with 15 elements
+```
+
+### 13.1.2 Arrays
+
+Arrays are a specialized type of collection only useable on one specific type per array. Instead of having its own type, an array of type `TYPE` is created by using the type `TYPE[]`. Otherwise, arrays can be intialized with a `collection` variable only containing data of type `TYPE`.
+
+Example:
+
+```
+numbers: i32[] = { 10, 5, 20 };
+```
+
+Note that for both collections and arrays `NAME[index]` returns the actual stored element and not a copy, making it mutable and reflecting any changes to it in the actual list.
+
+Using `new TYPE[size]`, an array with exactly `size` elements set to the default value of `TYPE` is created:
+
+```
+numbers: i32[] = new i32[25]; // 25 new i32's all set to the default value of i32 (0)
+```
+
+### 13.1.3 For-Each Loop
+
+To avoid required usage of the `for`-loop for looping over an collection (arrays are collections), ECY contains a specialized `foreach`-loop:
+
+```
+foreach (NAME : COLLECTION) {}
+```
+
+Where `NAME` is a named reference to the currently executed on element in the collection `COLLECTION`.
+
+For type-less collections, `NAME` cannot be transmuted unless converted into an impilicit data type.
+
+## 13.2 Advanced collections
+
+### 13.2.1 CollectionList
+
+Defined within `<list>` (.ecl).
+
+Acts as a dynamic collection in form of a class:
+
+```
+import <list>;
+list: CollectionList = new CollectionList(10); // CollectionList of size 10 is created
+list.Add(10); // An 11th member is added!
+list.RemoveAt(1); // Index 1 is removed!
+```
+
+### 13.2.2 List\<T>
+
+Defined within `<list>` (.ecl).
+
+Acts as a dynamic array in form of a class with an embedded generic, used like a `CollectionList` but requiring the generic to be given a type.
+
+\--- Spec End ---
+
+# IV How ECY will be handled
+
+Unlike some other programming languages, I want ECY to be part of the programmers, not part of my bank account. That's why ECY and it's entire Resources and Compiler will be entirely open-source and put under no Trademark or Copyright.
+
+ECY, as I see it, is a language “for the masses”. The entire point about ECY is to give power back to the programmer without sacrificing the simplicity to code in it (Simple Complexity), so a Copyright or making it closed-source goes entirely against this defining feature of the language.
+
+Not only will ECY be open-source, but anyone can edit the source code of the compiler and resources, though banning still happens to people who deliberately destroy the source intentionally in any way, shape, or form.
