@@ -927,3 +927,642 @@ else { CODE }
 
 Important to note is that inside `CODE`, no methods or objects can be defined. `CODE` also counts as a scope, so any variables defined inside of it are not accessable to code outside of it.
 
+### 5.1.3 Conditions
+
+Conditions are always made up of three parts:
+
+* The left conditional
+* The conditional operator
+* The right conditional
+
+The conditional operators were already thoroughly introduced in 1.4.5 and will be used as the conditional operators in conditions.
+
+The left and right conditional are always terms that result in a comparable value, like numericals, text-based or other types of data.
+
+
+
+A condition always evaluates to either true or false, true being the condition proven as correct, false the opposite, so proven to be incorrect.
+
+If statements use these conditions and only execute the CODE if the condition inside their parantheses evaluates to true:
+
+```
+if (a > b) {
+  a = b;
+}
+```
+
+Else statements must be placed right after if statements or else-if statements and only execute the CODE if the condition inside the parantheses of the behind placed if/else-if statement evaluates to false:
+
+```
+a: i32;
+b: i32;
+text: str;
+print("Enter number 1: ");
+getInput(text);
+a = parseToi32(text);
+println("");
+print("Enter number 2: ");
+getInput(text);
+b = parseToi32(text);
+println("");
+if (a > b) {
+  println("Number 1 is bigger than number 2");
+}
+else if (a == b) {
+  println("Both numbers are equal");
+}
+else {
+  println("Number 1 is smaller than number 2");
+}
+```
+
+### 5.1.4 Conditions and Logic Gates
+
+Logic gates can be used on both conditions and booleans to change the evaluation of a boolean term or condition.
+
+Below are tables showing the possible outputs of every logic gate given true and false values:
+
+* AND-Gate &&
+
+| Input 1 | Input 2 | Output |
+| ------- | ------- | ------ |
+| true    | true    | true   |
+| true    | false   | false  |
+| false   | true    | false  |
+| false   | false   | false  |
+
+* OR-Gate ||
+
+| Input 1 | Input 2 | Output |
+| ------- | ------- | ------ |
+| true    | true    | true   |
+| true    | false   | true   |
+| false   | true    | true   |
+| false   | false   | false  |
+
+* XOR-Gate ^^
+
+| Input | Input | Output |
+| ----- | ----- | ------ |
+| true  | true  | false  |
+| true  | false | true   |
+| false | true  | true   |
+| false | false | false  |
+
+* NOT-Operator !
+
+| Input | Output |
+| ----- | ------ |
+| true  | false  |
+| false | true   |
+
+Here are some code examples:
+
+```
+a: i32;
+b: i32;
+c: b32 = (a > b) || (a < b) // True if a is either bigger than b OR smaller than b or both
+d: i32;
+e: b32 = (a == d) && (a > b) // True if a is both equal to d AND bigger than b
+f: b32 = (a == d) ^^ (b >= a) // True if either a is equal to d OR b is bigger or equal to a, but not if BOTH are true
+```
+
+The conditions in above example are used to assign booleans, which is possible because conditions evaluate to a boolean value (true or false), so they can be used for assigning boolean values.
+
+### 5.1.5 Inline if-statement and if-else-statement code
+
+It's possible to use if statements to lock a line of code behind a condition by placing it behind the code in question:
+
+```
+if (a > 6) a = 2 * b;
+else if (a == 3) a = 3 * b;
+```
+
+This also works for else, though else doesn't have parantheses so it will look like this:
+
+```
+if (a > 6) a = 2 * b;
+else a = 5 * b;
+```
+
+This is also the reason why the else-if-statement exists.
+
+### 5.1.6 Ternary conditionals
+
+You can use the ? operator for a so called **ternary conditional**:
+
+```
+COND ? IFTRUE : IFFALSE;
+```
+
+The IFTRUE code runs if COND is true, IFFALSE if COND is false. This can be used inline aswell:
+
+```
+a: i32 = 10;
+b: i32 = 11;
+c: i32 = a > b ? a : b; // If a is bigger than b, c is set to a, otherwise it's set to b
+```
+
+### 5.1.7 Switch-statements
+
+`switch`-statements allow for code to be checked conditionally through cases:
+
+```
+val: i32 = 12;
+switch<i32>(val) {
+  case 1: { println("it's 1 baby"); }
+  case default: { println("It ain't 1 baby"); }
+}
+```
+
+A case is just a shorted version of an else-if-statement, though the `{}` remain. Using `break;` allows you to break out of the switch.
+
+A `switch`-statement is built like this:
+
+```
+switch<type> (VAR) {
+  CASES
+}
+```
+
+`type` has to be set to the type of the values used in the cases. Using a different type for `VAR` or the cases will result in casting. If casting fails, an exception is thrown.
+
+A case itself is built like this:
+
+```
+case VAL: { CODE }
+```
+
+Important to note is that `VAL` can actually be a variable, as long as the type family is the same (for casting).
+
+`CODE` can be any kind of statement code, following the same rules as if-statement code.
+
+`switch` is also compatible with objects and containers.
+
+
+
+If a switch cannot find a case that evaluates to `true` for `VAR`, it will simply do nothing. To allow a `switch`-statement to run code on any value of `VAR`, regardless of wether a case evaluated to `true`, use `case default:`. This is called the default case, and its code runs no matter if any case evaluated to `true`:
+
+```
+a: i32 = 21;
+switch<i32> (a) {
+  case 1: { println("Hi"); }
+  case default: { println("Bye..."); }
+}
+/*
+ * This switch statement will print:
+ * * Bye...
+ * if a is not 1.
+ * If, however, a is 1, it will print:
+ * * Hi
+ * * Bye...
+*\
+```
+
+To have a case that only runs if no case evaluates to `true`, you can use the fail case `case fail:`:
+
+```
+print("Give me an integer: ");
+txt: str;
+getInput(txt);
+println("");
+a: i32 = parseToi32(txt);
+switch<i32> (a) {
+  case 1: { println("You gave me a 1 bro?"); }
+  case default: { println("Alright..."); }
+  case fail: { println("no 1 bro?"); }
+}
+```
+
+Because the default case runs everytime, the fail case ignores it.
+
+The position of the default and fail case matter as well, as cases run top to bottom. So if you put the default case at the very start in above example, instead of printing:
+
+```
+You gave me a 1 bro?
+Alright...
+```
+
+If a is 1, it would print:
+
+```
+Alright...
+You gave me a 1 bro?
+```
+
+This only count for the default and fail case, though.
+
+## 5.2 Loops
+
+### 5.2.1 The while-loop
+
+The while loop executes a block of code CODE as long as a given condition COND evaluates to true:
+
+```
+while (COND) {
+  CODE
+}
+```
+
+Note, however, that while can also have any boolean term as a condition, including true (infinite loop) and false (never started loop).
+
+### 5.2.2 Stopping loops prematurely
+
+You can use the `break` keyword to end a loop like a while-loop:
+
+```
+while (true) { // Repeat forever
+  if (a > b) break; // ...but stop the loop if a is bigger than b
+}
+```
+
+### 5.2.3 The for loops
+
+The for loop executes a block of code a number n of times. This is the base syntax for the for loop:
+
+```
+for (VAR; COND; STEP) {
+  CODE
+}
+```
+
+Where VAR is either replaced by a new variable definition or an already existing variable, COND is a condition checked before every loop and STEP is how the variable changes every loop.
+
+Example of printing numbers 1 to 10:
+
+```
+for (i: i32 = 1; i < 11; i++) {
+  println(i);
+}
+```
+
+This can be seen as a while loop:
+
+```
+i: i32 = 1;
+while (true) {
+  println(i);
+  i++;
+  if (i >= 11) break;
+}
+```
+
+Or as this while loop:
+
+```
+i: i32 = 1;
+while (i < 11) {
+  println(i)
+  i++;
+}
+```
+
+### 5.2.4 Second variation of a for loop
+
+For loops have 3 variations, the second one looks like the following:
+
+```
+for (VAR => MAX; STEP) {
+  CODE
+}
+```
+
+Here, MAX is the maximum value reached. To better visualize this, here is the same for loop in both known variations:
+
+```
+for (i: i32 = 0; i < 11; i++) { println(i); }
+
+for (i: i32 = 0 => 10; i++) { println(i); }
+```
+
+If the step is negative, the for loop will either have to have a MAX set below the starting value or it will end in an infinite loop.
+
+MAX can also be any type of number, but depending on the type VAR is, MAX could end up being casted to the other type in compile-time for increased performance.
+
+### 5.2.5 The third variation of for loops
+
+The third variation of for loops allows for much more freedom in ranges:
+
+```
+for (VAR => INTERVAL STEP) {
+  CODE
+}
+```
+
+Here, VAR is not given a start value, instead INTERVAL is used as a mathematical interval:
+
+```
+[0; 10]
+/*
+[ -> start value included in the range (0)
+] -> end value included in the range (10)
+So, the range is 0 => 10
+*/
+]0; 10[
+/*
+] -> start value excluded from the range (0)
+[ -> end value excluded from the range (10)
+So, the range is 1 => 9 or any floating-point x with 0 < x < 10
+*/
+```
+
+Here is the same for loop in all variations:
+
+```
+for (i: i32 = 0; i < 21; i++) { println(i); }
+
+for (i: i32 = 0 => 20; i++) { println(i); }
+
+for (i: i32 => [0; 20] i++) { println(i); }
+```
+
+The same casting rules apply to the interval values as to MAX from the second for-loop variation.
+
+# 6 Methods
+
+## 6.1 The basic method
+
+### 6.1.1 Method structural syntax
+
+Unlike most langauges, ECY methods have a hanging return type for methods, as seen in the method syntax:
+
+```
+NAME (PARAMS) -> RETURNTYPE {
+  CODE
+}
+```
+
+You can use the `return` keyword to return a value if it's type is equal to the return type.
+
+### 6.1.2 Calling methods
+
+Say we have a method named PrintHi():
+
+```
+PrintHi() -> void {
+  println("Hi");
+}
+```
+
+To now call this method, we can use the method calling syntax:
+
+```
+NAME(INPUTPARAMS);
+```
+
+So, in this example, given PrintHi() has no parameters, we can call it via `PrintHi();`.
+
+### 6.1.3 Method parameters
+
+Method parameters work exactly like in other languages, though unlike normal ECY variable definitions, for ease of use and readability ECY allows type-first defining for parameters:
+
+```
+Foo(i32 a, b: i32) -> void {
+  a += b;
+}
+```
+
+By giving parameters a initialization value, they have default values. Mind that default parameters (parameters with default values) must follow after normal parameters.
+
+```
+Foo(i32 a, i32 b = 10) -> void {
+  a += b;
+}
+
+Foo(10, 5); // Called with new value for b
+Foo(10); // Called without new value for b, so b uses its default value of 10
+```
+
+### 6.1.4 Method overloading
+
+Methods in ECY can be overloaded by using the same name with different parameters, where wether or not a parameter is default is ignored, so only the existence of different parameters is important:
+
+```
+Foo(i32 a, i32 b) -> void {
+  a += b;
+}
+Foo(i32 a, i32 b, i32 c) -> void {
+  a += b + c;
+}
+
+Foo(10, 5);
+Foo(15, 10, 5);
+```
+
+## 6.2 Method inheritance
+
+### 6.2.1 The idea behind method inheritance
+
+As an idea, method inheritance solves a problem seen in many APIs, being that API methods are always behind curtains and cannot be expanded on by being behind those curtains, often times even copyrighted. While method inheritance doesn't expose method contents, it exposes the ability to expand on a method, allowing for “patchwork methods”, methods made by glueing new pieces to a framework method, called the Supermethod.
+
+### 6.2.2 How method inheritance works
+
+```
+Super() -> void { print("Hello, World!"); }
+```
+
+Say we have this method Super() and it's protected through the usual closed API safety measures, including obfuscation, anti-decompilation writing and such. We can still expand on Super() by creating a new submethod and expanding Super() through it, done through the `sub` keyword. The submethod will also inherit all parameters, modifiers and the return type from the supermethod.
+
+```
+sub SuperWithNewLine() <- Super() [
+pre {
+
+}
+post {
+
+}
+]
+```
+
+You might notice the weird way a submethod is built, following the structure of property fields, which will be explained thoroughly in later chapters. Important to know is that inside the pre-property comes all code to be placed before the original supermethod code, inside the post-property all code to be placed after.
+
+Also, any return that would render post \{} redundant will be replaced by a special \_ret variable assigned to the return with the correct type from context.
+
+Here is an example to explain this concept visually:
+
+```
+Sum(i32 a, i32 b) -> i32 {  
+  return a + b;
+}
+
+sub SumPrint(i32 a, i32 b) <- Sum(i32 a, i32 b) [
+  pre {}
+  post {
+    println(_ret);
+    return _ret;
+  }
+]
+```
+
+Keep in mind that \_ret is a reserved keyword in the ECY language, so \_ret will always be used as the original return of the supermethod inside the post-property. However, inside the pre-property, assignments to the \_ret variable can still be done, even though this will never have effect on the post-property of the submethod. If the return type is void, \_ret cannot be pinged as there is no return made by the supermethod with a value, instead the original redundating returns of the supermethod are simply removed.
+
+The pre-property and the post-property can also be left empty, however the post-property of a non-void method always has to end in `return _ret;` or any other returned value of choice, literal, variable, or \_ret.
+
+## 6.3 Method Generics
+
+### 6.3.1 The given generic
+
+In ECY, you can use the `given` generic as a new way of doing generics in method parameters:
+
+```
+Sum(given a, given b) -> given {}
+```
+
+This method head uses the `given` generic, allowing an argument of any type to be passed. This method is still only half of the full generic layout.
+
+### 6.3.2 Constraining
+
+To now actually use the `given` generic, a constraint must be set on the given type. This can be done using the `constrain` keyword:
+
+```
+Sum(given a, given b) -> given {
+  constrain given => FAMILY;
+}
+```
+
+FAMILY is to be replaced by either a specific type or a “type family”, which is like a generic for a type of primitives.
+
+You can use `familyOf()` to get the family of a certain primitive:
+
+```
+familyOf(i32); // Gives you the number family
+```
+
+This allows you to constrain `given` generics to type families like Text (`str`, `chr`, etc.), Number (`i32`, `f64`, etc.) and others.
+
+Not using constrain, however, is not possible with the `given` generic, which is to blame on the backend seeing `given` as a macro-replaced type, even though it technicallyis not.
+
+### 6.3.3 Free constraints
+
+The ECY `given` generic constraining still has more features, which includes the `free constrain`, which allows you to constrain with automatic casting and text-parsing to the correct family or type, where the type used in `familyOf()` is the parsed-to type:
+
+```
+Print(given a) -> void {
+  free constrain given => i32; // Now non-i32 is casted to i32 and str or chr is parsed to i32 (on failure an exception is thrown)
+  println(a);
+}
+
+SecondPrint(given a) -> void {
+  free constrain given => familyOf(i32); // Same here -> while numbers are not casted, str and chr are parsed to i32 (because i32 is used in familyOf())
+  println(a);
+}
+```
+
+### 6.3.4 Embedded generic
+
+Since the `given` generic can lead to possible readability loss if no context is given to methods with `given` and `constrain`, ECY allows the use of **embedded generics**, which are useful to make generics more readable for users, but less readable for programmers (in some cases):
+
+```
+Sum<T>(T a, T b) -> T {
+  constrain given<T> => familyOf(i32);
+  return a + b;
+}
+```
+
+This solves the problem of the `given` generic being locked to `constrain` as the embedded generic is actually useable as a full generic.
+
+Also, the embedded generic can be named any amount of letters and digits long, but must start on a letter:
+
+```
+Sum<Number>(Number a, Number b) -> Number {
+  constrain given<Number> => familyOf(i32);
+  return a + b;
+}
+```
+
+### 6.3.5 Multiple embedded generics
+
+ECY allows the use of multiple embedded generics in a method like this, where every embedded generic must be named differently and constraints on a list of generics `[T1, T2, T3, ...]` can be done as `given<T1, T2, T3, …>`, sub-sets of the list like `given<T1, T2, T4>` or even per generic like `given<T5>`:
+
+```
+Sum<Number1, Number2>(Number1 a, Number2 b) -> Number1 {
+  constrain given<Number1, Number2> => familyOf(i32);
+  return (Number1)(a + b);
+}
+```
+
+## 6.4 Function variables
+
+### 6.4.1 The basics behind function variables
+
+In ECY, a method can be saved in a variable of type `function`. This variable will then act like the method it references and can be used to call the given method.
+
+This is done by setting the variable to a reference to the method. The method reference to a method `func()` is simply `func`.
+
+This way, a function can be called indirectly:
+
+```
+Add(i32 a, i32 b) -> i32 { return a + b; }
+add: function = Add;
+add(10, 5); // Calls Add(10, 5)
+```
+
+A function variable, by definition, cannot be assigned to a new method after intialization.
+
+To fix this, the function variable must have pre-defined parameter types like so:
+
+```
+Add(i32 a, i32 b) -> i32 { return a + b; }
+Sub(i32 a, i32 b) -> i32 { return a - b; }
+Mul(f32 a, f32 b) -> f32 { return a * b; }
+arith: function(i32, i32) = Add;
+arith(10, 5); // Calls Add(10, 5)
+arith = Sub;
+arith(10, 5); // Calls Sub(10, 5)
+arith = Mul; // Error! arith's parameter types are defined as (i32, i32), but Mul's parameter types are defined as (f32, f32)
+```
+
+### 6.4.2 Handling function variable returns
+
+When a function variable is called, the return value is lost. This is because function variable's bypass the stack internally through jumping. But, unlike normal functions, function variables can have a defined “catch variable”.
+
+This catch variable is where the resulting return of a function is saved, which then causes the function variable to act closer to a traditional function call. To define a catch variable, the `into` keyword is used:
+
+```
+Add(i32 a, i32 b) -> i32 { return a + b; }
+Sub(i32 a, i32 b) -> i32 { return a - b; }
+
+result: i32 = 0;
+arith: function(i32, i32) into result = Add;
+arith(10, 5); // 15 is saved into result
+arith = Sub;
+arith(10, 5); // 5 is saved into result
+```
+
+### 6.4.3 Handling function variable generics
+
+To include generics in a function variable, either given is used as a type for the method generic or the embedded generic is defined via `function<T1, T2, …>(T1, …, T2, …)`:
+
+```
+Add<Num from familyOf(i32)>(Num a, Num b) -> Num { return a + b; }
+
+add: function<T>(T, T) = Add;
+add(10, 5);
+```
+
+Unlike in the method definition for `Add`, the function variable `add` only needs to hint at the embedded generics positionally, but not by name or by constraint.
+
+To now catch the return of a function variable with generics, the result must be of the special type `given*`, which works as a pointer to a function return, basically being a placeholder for any function return that then must be dealt with accordingly.
+
+The catch variable will also automatically point to the correct type that was returned, accessed via `*NAME`. A `given*` catch variable is also immutable and must be stored in the correct return type to be able to be written into.
+
+```
+Add<Num from familyOf(i32)>(Num a, Num b) -> Num { return a + b; }
+
+result: given*;
+add: function<T>(T, T) into result = Add;
+add(10, 5); // 15 is stored in result (i32)
+println(result); // Crash, result is a placeholder
+println(*result); // 15
+*result = 10; // Crash, result and *result are immutable
+res: i32 = *result; // given* is always by copy when stored in another variable
+res = 10;
+```
+
+### 6.4.4 What not to do
+
+ECY can crash from function variables if they're not dealt with accordingly. Here is what not to do:
+
+* Call a null function variable: Falls under `NullPointerException`. Because of this a function variable always has the base value `null`, which can be tested for.
+* Print a function variable: Falls under `FunctionAttemptParseException`. Because of the ambiguity of how printing a function should look it is impossible to print one. For function generics, this is dealt with by ECY during compilation by skipping over print instructions on function variables when inputted into a generic method.
+
