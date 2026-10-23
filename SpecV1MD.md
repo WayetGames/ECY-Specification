@@ -2231,3 +2231,345 @@ Marks a variable or field as **not optimizable**, prompting the compiler to not 
 The exact optimizations not performed are:
 
 * Register allocation: Saving a locally scoped not top-level variable in a register if only used and defined inside that small scope (like a function body)
+* Compile-time calculations: Pre-calculating mathematical expressions with constant results
+* Shadowing variables: Not creating a variable if its value is constant and its defined only inside a small scope, instead using direct literals
+* Dead-Code elimination: Not compiling unused variables or variables at dead ends. This does not contain dead-code elimination after return statements
+
+### 8.1.2 Require
+
+\[This keyword acts differently on fields]
+
+Instructs the compiler to allocate memory on the stack for the given variable, regardless of memory optimizations the compiler would perform on it. Works like `volatile` but keeping performance optimizations that don't optimize memory usage from storing variables in the stack instead of registers.
+
+If used on an object instance, heap memory is allocated instead, unless for structs which are stack-allocated instead.
+
+### 8.1.3 Sync
+
+Forces a variable to sync itself along threads as good as possible. This makes it possible to force thread safety even on lower levels of optimization.
+
+### 8.1.4 Unlock
+
+Marks a variable as **memory important**, causing the GC to wait until the very last possible second to dispose of it. Pointers are unlocked by nature while safe pointers are not, making `unlock` incompatible with pointer variables.
+
+### 8.1.5 Trash
+
+Marks a variable as **temporary**, making the GC dispose of it the moment the current scope is left. This also works in the top-level, where instead the GC disposes of a `trash` variable right after the last usage of it (baked into the assembly).
+
+### 8.1.6 Const
+
+Marks a variable defined inside a function or loop-statement as **constant**, making the Compiler allocate it to the stack and use the same variable everytime the function is called. This effectively works like a static field for a function without the ability to reference it outside the function's scope.
+
+Function variables cannot be marked as `static`, hence why `const` is the less versatile but more fitted alternative.
+
+### 8.1.7 New
+
+Marks a variable defined inside a function or loop-statement as to be **recreated** every call/repeat. This means that, opposite to `const`, the compiler will allocate new stack memory for the variable everytime it's defined. Incompatible with `const`.
+
+While the original allocation will get disposed of by the GC after some time, `new` is a way to avoid the problem of the Compiler “const-ing” variables automatically as an optimization.
+
+​
+
+If used on a field, method, constructor or operator overload inside an object inheriting from another, it will allow the redefinition of the given field, method, etc. if
+
+* The superobject's definition is marked with `template`
+* And the definition is not marked with `override`
+
+This makes it so when accessing the definition, it will use the redefinition, but if the subobject was converted into an object of the type of the superclass, it would use the original definition.
+
+### 8.1.8 Is
+
+Returns wether a variable `VAR` is of type `TYPE`. Only useable inside conditions or as a explicit boolean value.
+
+```
+num: i32 = 10;
+if (num is i32) println("Num is an integer"); // Always true as num IS an i32
+```
+
+## 8.2 Asynchronous code
+
+### 8.2.1 The go keyword
+
+Functions can be run asynchronous by using the `go` keyword. This will have them run in a background thread:
+
+```
+foo() -> void { println("Hi"); }
+
+go foo();
+println("Bye"); // Might print first, might not
+```
+
+### 8.2.2 The wait keyword
+
+The `wait` keyword allows for the halting of the current thread until a `go`-called method has completed. It also allows for getting the return of a `go`-called method without running into the danger of it haven't completed:
+
+```
+foo() -> void { println("Hi"); }
+
+go foo();
+println("What?");
+wait foo; // Without () or it would call foo()
+println("Bye");
+```
+
+Important to know is that with a method X doing `wait X()` will call the method on a background thread and immeadeately wait for it, useful for getting returns asynchronously, while `wait X` will halt until the last `go`-call of X to finishes.
+
+### 8.2.3 The async block (asynchronous expression / asyncexpr)
+
+The `async`-block allows for literal code to be called asynchronously. You can create them like a function but with `async` behind them:
+
+```
+async AddTwo(i32 a, i32 b) -> void {
+  a += b;
+}
+
+go AddTwo(5, 12);
+println("Adding numbers...");
+wait AddTwo;
+```
+
+## 8.3 Namespaces
+
+### 8.3.1 Creating a namespace
+
+In ECY, namespaces are created using the `namespace` keyword:
+
+```
+namespace MyNamespace {
+  a: f32;
+}
+```
+
+### 8.3.2 using keyword
+
+Using the `using` keyword allows you to remove the need to name a namespace when accessing a value from it, it effectively “opens” the namespace:
+
+```
+namespace A {
+  public a: i32 = 42;
+}
+using A;
+println(a); // Works now without A.a
+```
+
+## 8.4 Error Handling
+
+### 8.4.1 Try-catch-statement
+
+The try-catch-statement allows for the testing of code and “catching” of an exception. This allows you to avoid code crashes by handling errors before they can reach the actual program:
+
+```
+try {
+  CODE
+}
+catch (Exception e) { // e is an instance of an exception class
+  HANDLECODE
+}
+catch default { // Do this no matter what failed
+  DEFAULTHANDLECODE
+}
+```
+
+To avoid the burdon of having to create a catch for every possible exception, the `catch default` statement allows for general error handling to occur while the `catch (Exception e)` statement has a specified exception.
+
+Any try-statement must be followed by atleast one catch-statement. Furthermore, catch-statements for the same exception cannot be put together with the same try-statement, every catch-statement connected to the same try-statement must handle a different exception.
+
+Here is a list of basic exceptions:
+
+* `NullPointerException`: A pointer or variable was used that is of value `null` (nothing)
+* `InvalidOperationException`: General exception for any code operation that is invalid
+* `IndexOutOfRangeException`: A non-existent index of an container was accessed
+* `InvalidIndexException`: A variation of `IndexOutOfRangeException` thrown when a (by definition) invalid index was accessed, like a negative number, non-integer number or `null`
+
+### 8.4.2 Throwing exceptions manually
+
+ECY allows exceptions to be thrown by the user themselves via the `throw` keyword:
+
+```
+throw EXCEPTION;
+```
+
+`EXCEPTION` must be replaced by an instance of any exception. Every exception in ECY has the same constructors:
+
+```
+EXCEPTION(message: str);
+EXCEPTION(messgae: str, obj: Object);
+```
+
+This allows you to throw an exception manually:
+
+```
+a: i32;
+txt: str;
+getInput(txt);
+try {
+  a = parseToi32(txt);
+}
+catch (InvalidOperationException e) {
+  throw new InvalidOperationException("i32 expected in string");
+}
+```
+
+# 9 Compile-Time Code Handling
+
+## 9.1 Compiler handling via pragma
+
+### 9.1.1 What pragma does
+
+`pragma` is a pre-processor command like `import` (see “10 Accessing external ECY resources”) and is used to send instructions to the Compilation Program itself, where the Pre-Processor, Linker, and Compiler life.
+
+The syntax of a pragma-instruction looks like this:
+
+```
+pragma INSTRUCTION;
+```
+
+`INSTRUCTION` is to be replaced by a pragma-instruction.
+There are no Pre-Processor pragma-instructions as of now.
+
+`pragma` commands only affect the file they're written in.
+
+### 9.1.2 Compiler pragma-instructions
+
+Following is a list of basic Compiler pragma-instructions:
+
+* `setOp(lvl: freestr)`: Sets the optimization level of the compiler. Possible levels are: “O0” (none), “O1” (default), and “O2” (hyper-optimized).
+* `setAggr(lvl: freestr)`: Sets the aggression level of the compiler. Possible levels are: “A0" (exact compile), “A1” (default; basic optimization aggression), “A2” (hyper-aggressive), and “A3” (hyper-aggressive; allows the compiler to reorder code and inject auto constructors and operator overloads into the code file itself).
+
+### 9.1.3 Linker pragma-instructions
+
+Following is a list of basic Linker pragma-instructions:
+
+* `dependsOn(file: str)`: Marks the current file as **depending** on the given file. This causes the file at `file` to be automatically imported by the Linker. If the dependent-on file is not found, the Linker will throw an `MissingDependency` error.
+* `dependsOn(file: str, directive: str)`: Overload of `dependsOn(file: str)`. `directive` allows for the inclusion of a possible location the file can be found at or a website from which it can be downloaded from in the case of it missing in the project. The `MissingDependcy` error will also include the extra sentence “The missing file can be found at or downloaded from \\"`file`\\".”, where `file` is the string passed as `directive` in `dependsOn(file: str, directive: str)`.
+* `fileType(type: str)`: Sets the type of file the Linker should interpret the current file as. Not needed if the current file's type matches the file type the Linker should interpret it as. Possible file types are “ecy” (ECY Code File), “ecl” (ECY Library File), and “ech” (ECY Header File).
+
+# 10 Accessing external ECY resources
+
+## 10.1 Accessing resources
+
+### 10.1.1 Import
+
+Importing in ECY is the basic way to access external resources like headers or libraries. You do it via the `import` keyword and put the imported file into `<>`, where there is no need for the usage of `""` or the explicit input of the file type. A `;` at the end is required though:
+
+```
+import <emath>;
+
+
+println(sqrt(153)); // Example of emath
+```
+
+### 10.1.2 Implementing
+
+Sometimes, two libraries define the same thing. In this case, ambiguity can be avoided by using `implement` instead of `import`. `implement` acts as a namespace-wrapped import, instead of dumping all the contents of library or header xyz into the current file's scope, it creates a namespace xyz where all the contents are dumped into instead.
+
+```
+implement <emath>;
+
+println(emath.sqrt(153)); // This is the only way to use emath now
+```
+
+### 10.1.3 Custom namespace implement
+
+Using `implement <…> as NAMESPACE`, it's possible to use a custom name for dumping namespace implement uses:
+
+```
+implement <emath> as Math;
+
+println(Math.sqrt(153)); // A little better
+```
+
+### 10.1.4 Attempt import and implement
+
+In the case that a library or header is already imported/implemented, using `attempt` allows the coder to tell the linker to check if an import/implement is needed or another library or header already exposed the imported/implemented resources, acting as a safe-guard against linker-based performance isssues and ambiguity:
+
+```
+import <emath>; // Linker exposes emath
+...
+attempt import <emath>; // Linker does not expose emath as it's already exposed
+...
+implement <list> as Collections; // Linker exposes list into Collections
+...
+attempt implement <list> as Generic, // Linker does not expose list as it has either been already imported or implemented
+
+```
+
+## 10.2 Handling resources safely
+
+### 10.2.1 Distinct
+
+`distinct` allows you to solve ambiguity between an imported object and a currently defined object manually:
+
+```
+import <emath>;
+distinct PI emath.PI; // Now it distincts between PI and emath's PI by requiring emath's PI to be called as emath.PI
+
+PI: f32 = 3.14f; // Ambiguity error!
+```
+
+## 10.3 Removing built-in libraries
+
+Using the `export` keyword, imported built-in libraries like \<io> and \<list> can be removed from a file:
+
+```
+export <io>;
+
+println("Hi!"); // Error! println no defined
+```
+
+# 11 External resources
+
+## 11.1 Headers
+
+### 11.1.1 What headers are
+
+An ECY header file (short header, file type “.ech”) is an external ECY resource that allows you to define compile-time constants and objects & methods. Unlike a library, headers are just simple definition files, which require a lot less time to be compiled and linked and imported/implemented during Compilation.
+
+They also cannot import any data into themselves and they follow the idea of: “Compile Once. Import Anytime”.
+
+The basic layout of a header file is:
+
+```
+pragma fileType("ech"); // Optional, required if you're not using a .ech file to make a header
+
+public static answer: i32 = 42; // Everyone who imports this header has access to answer
+private static notTheAnswer: i32 = 42; // This is private, in the header context meaning it's only available to the header itself
+```
+
+Headers are also compiled seperately and only need to be recompiled if changes are made as they're basically just like normal “.ecy” code files, just with more versatile features like dependencies via pragma.
+
+### 11.1.2 Importing/Implementing custom headers
+
+Importing/Implementing a custom header file works exactly like importing a library or header normally:
+
+```
+import <NAME.ech>;
+```
+
+Here, `NAME` is to be replaced by the name of the custom header file without file type, that is what the `.ech` is needed for.
+
+## 11.2 Libraries
+
+### 11.2.1 What libraries are
+
+An ECY library file (short library, file type “.ecl”) is an external ECY resource that allows you to define compile-time constants and objects, methods, even import/implement other libraries and headers. This makes them take more time to be compiled and requires their recompilation when actually used to test for dependencies and check for Syntax errors or ambiguities and also resolve linking. That's because they're handled like special “.ecy” code files, and as such are able to access global namespaces & definitions, though that makes them hard-dependent on such.
+
+The basic layout of a library file is:
+
+```
+pragma fileType("ecl"); // Optional, required if you're not using a .ecl file to make a library
+
+public static answer: i32 = 42; // Everyone who imports this library has access to answer
+private static notTheAnswer: i32 = 42; // This is private, in the library context meaning it's only available to the library itself
+```
+
+### 11.2.2 Importing/Implementing custom libraries
+
+Importing/Implementing a custom library file works exactly like importing a built-in library:
+
+```
+import <NAME>;
+```
+
+Where `NAME` is to be replaced by the name of the custom library with or without the file type.
+
+# 12 Types & Generics
