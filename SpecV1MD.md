@@ -2573,3 +2573,337 @@ import <NAME>;
 Where `NAME` is to be replaced by the name of the custom library with or without the file type.
 
 # 12 Types & Generics
+
+## 12.1 Type System
+
+### 12.1.1 Creating custom types
+
+ECY allows the programmer to create custom types by using structs as “definition anchors”.
+
+These structs can hold multiple fields and static methods, but no instance methods. The requirement for a struct to act as a “definition anchor” is to have both a return property and an overload for the assignment operator:
+
+```
+public struct ComplexValue {
+  public img: f32;
+  public real: f32;
+  auto construct ComplexValue(f32 img, f32 real) {}
+}
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(ComplexValue$ b) -> void {
+    this = new Complex(b.img, b.real);
+  }
+  return { ComplexValue c = new ComplexValue(this.img, this.real); } => c;
+}
+```
+
+To now setup this “definition anchor” as a custom type, you use the `typedef`-construction:
+
+```
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(ComplexValue$ b) -> void {
+    this = new Complex(b.img, b.real);
+  }
+  return { ComplexValue c = new ComplexValue(this.img, this.real); } => c;
+} typedef complex => Complex;
+```
+
+This makes `complex` act like a type version of the `Complex` struct.
+
+`typedef` must also follow right after the definition of the “typified” struct, though it can have a new line between it and the struct.
+
+Because creating a new struct instance every call of a custom type can be overwhelming for a cpu to handle, definition anchors can use the special “definition anchor return property”:
+
+```
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(complex$ b) -> void { // ComplexValue not needed anymore since with "return => this;" every Complex and complex returns itself
+    this = new Complex(b.img, b.real);
+  }
+  return => this; // Now returns a complex (the custom type)
+} typedef complex => Complex;
+```
+
+The definition anchor return property is always structured as `return => this;` and makes the custom type act as a reference to itself when referenced according to the rules of the usual return property.
+
+The definition anchor return property is reserved for definition anchors.
+
+The rules of what makes a struct a definition anchor are:
+
+* No instance methods
+* No shaped constructors
+* Full constructor
+* Overload for the assignment operator (‘=’)
+* Return property
+* Connected `typedef`-construction
+
+### 12.1.2 Using custom types
+
+A custom type made from a definition anchor can be used like a usual type, not requiring any kind of constructors or `new`-usage:
+
+```
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(ComplexValue$ b) -> void {
+    this = new Complex(b.img, b.real);
+  }
+  return => this;
+} typedef complex => Complex;
+complex num;
+num.img = 10; // Sets img of custom complex variable to 10
+```
+
+Behind the scenes, custom type variables are still handled like structs with the difference of them being able to be constrained on and work for generics, but also have custom conversion rules.
+
+### 12.1.3 Cast overloading
+
+To allow custom types to be more versatile in ECY so-called “Cast Overloading” can be performed to define custom rules for converting to different types.
+
+The syntax of a cast overload are as follows:
+
+```
+CASTVERSION<type>() -> type {}
+```
+
+In a cast overload, `CASTVERSION` is the type of casting in question. There are different kinds of casts, more to them later. `type` is to be replaced by the type being converted to.
+
+### 12.1.4 Types of casts
+
+Casts in ECY have different “types” to them. This is because, depending on context and the given types, ECY might perform a different set of casting steps on different casts.
+
+While ECY automatically detects the most optimal cast during compilation, using the `VAR1 = CASTVERSION<CASTTYPE>(VAR2);` syntax allows the programmer to force a certain type of cast to be used in the given conversion. `VAR1` is the variable being assigned the converted value, `CASTVERSION` is to be replaced by the wanted type of cast, `CASTTYPE` is the type being converted into, and `VAR2` is the variable or value converted into `CASTTYPE`.
+Just like with normal casting, casting explicitly using an explicit type of cast doesnt change `VAR2` in any way and instead just returns `VAR2` interpreted as `CASTTYPE`.
+
+If a type of cast is used on a conversion that cannot be done with the given type of cast, the compiler will instead use the most optimal type of cast on the conversion.
+
+There are multiple casting types defined in ECY, where only a few are defined in the pre-imported `<std>` library:
+
+* `ConstCast<type>()`: Compile-time conversion instead of runtime conversion.
+* `DynamicCast<type>()`: Runtime conversion.
+* `InstanceCast<type>()`: Runtime conversion for struct and class instances. Only useable to convert between structs/classes.
+* `AnyCast<type>()`: Placeholder for any casting type. Only useable for cast overloading.
+
+There are more casting types defined in other libraries. Following is an example of a built-in ECY library that contains more casting types:
+
+`<numerics>`:
+
+* `NumericCast<type>()`: Casting type optimized and only available for primitive number types.
+* `IntegerCast<type>()`: Casting type optimized and only available for primitive integer types.
+* `DecimalCast<type>()`: Casting type optimized and only available for primitive fixed- and floating-point decimal types.
+* `FloatingCast<type>()`: Casting type optimized and only available for primitive floating-point decimal types.
+
+Here is an example of using cast overloads with the above explained casting types in a definition anchor:
+
+```
+public class Tuple<T1, T2> {
+  Item1: T1;
+  Item2: T2;
+  auto construct Tuple(T1 Item1, T2 Item2) {}
+}
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(ComplexValue$ b) -> void {
+    this = new Complex(b.img, b.real);
+  }
+  public AnyCast<Tuple<f32, f32>>() -> Tuple<f32, f32> {
+    return new Tuple<f32, f32>(img, real);
+  }
+  return => this;
+} typedef complex => Complex;
+
+complex num;
+Tuple<f32, f32> myPair = num;
+```
+
+### 12.1.5 Setting type families for custom types
+
+To make `constrain`, `given`, and custom types work together perfectly, ECY allows a `typedef`-construction to be given a type family.
+
+This can be done by using `typedef<FAMILY>` instead of just `typedef`, where `FAMILY` is the family the custom type is a part of:
+
+```
+public struct Complex {
+  public img: f32;
+  public real: f32;
+  auto construct Complex(f32 img, f32 real) {}
+  public operator=(ComplexValue$ b) -> void {
+    this = new Complex(b.img, b.real);
+  }
+  public AnyCast<Tuple<f32, f32>>() -> Tuple<f32, f32> {
+    return new Tuple<f32, f32>(img, real);
+  }
+  return => this;
+} typedef<familyOf(i32)> complex => Complex;
+```
+
+By just using `typedef`, the custom type's family will be the `CustomFamily` family. The `CustomFamily` family cannot be converted from or to and any custom type defined under it cannot be converted into any of the other custom types defined under it.
+
+### 12.1.6 Type families
+
+Below is a list of the ECY type families defined under `<std>`:
+
+* `NumericFamily`: Family for numerical types
+* `TextFamily`: Family for text-based types (including `chr` types)
+* `BooleanFamily`: Family for boolean types
+* `PointerFamily`: Family for pointer types; Does not contain non-pointer types appended with `*`
+* `GenericFamily`: Family for generic types; Does not allow from, to, and cross conversion
+* `CustomFamily`: Family for custom types; Does not allow from, to, and cross conversion
+* `StructFamily`: Family for struct definitions; Does not contain custom types
+* `ClassFamily`: Family for class definitions
+
+### 12.1.7 Calling constructors on custom types
+
+To make value assignment for custom types faster, they can be reassigned and intialized using their constructors like:
+
+```
+name(/* Constructor stuff */); // Assignment
+name: customtype = customtype(/* Constructor stuff */); // Initialization
+```
+
+When using the constructor for assignment, the `operator=` is used, hence why `=` has to be overloaded for every definition anchor.
+
+For creating instances of custom types via the constructor, unless for a named variable, the constructor has to be preceeded by a `new`:
+
+```
+new complex(10.3f, 5f); // Trailing (managed) instance of complex type is created
+```
+
+## 12.2 Generics
+
+### 12.2.1 Custom Generic Types
+
+Generics in ECY can come in two flavors, those being:
+
+* Embedded: Generics embedded into methods and classes
+* Defined: Generics defined as types
+
+Custom generic types fall under defined generics and allow for a placeholder type for a type family to be defined as a custom type themselves.
+
+Unlike usual types, defined generic types cannot be used to define variables, instead they are to be used as a pre-constrained embedded generic in both classes and methods.
+
+### 12.2.2 Creating defined generic types
+
+Creating a defined generic type is as easy as setting up a collection of families and naming them using the `generic`-construction:
+
+```
+generic NumberAndText = {familyOf(i32), familyOf(str)};
+```
+
+In above example, a new generic `NumberAndText` is defined as a placeholder for both `NumericFamily` and `TextFamily`.
+
+Note that this:
+
+```
+txtornum: NumberAndText = "Hi";
+```
+
+Is not possible as defined generic types are only (like said) placeholders for handling type strictness at runtime - not compile-time.
+
+But, for a method that takes in both text and numbers, using defined generic types is a way to avoid embedding generics:
+
+```
+Print(NumberAndText input) -> void {
+  println(input); // Allowed as both NumberFamily and TextFamily are printable!
+}
+```
+
+# 13 Data Containers
+
+## 13.1 Basics
+
+### 13.1.1 Collections
+
+In ECY, collections are a type-less grouping of data inside `{}` and are created via the `collection` type:
+
+```
+numbers: collection = { 10, 5.5d, 0.9f, "Im not a number?" };
+```
+
+Internally, collections are handled as a list of pointers. Important to know is that a collection can be indexed using `[]`:
+
+```
+print(numbers[2]); // Prints 0.9 (the third element, index starts at 0)
+```
+
+Collections are also of fixed-length, given by the amount of data they're initialized with.
+
+If a collection element is used in the wrong context (e.g. numbers\[4] is put into an i32), a `TypeMismatchException` will be thrown at runtime.
+
+Collections can also be created of a custom length by using `new collection[LEN]`. `LEN` can either be an `i32` literal or a variable of type `i32`:
+
+```
+numbers: collection = new collection[5]; // collection with 5 elements
+a: i32 = 15;
+values: collection = new collection[a]; // collection with 15 elements
+```
+
+### 13.1.2 Arrays
+
+Arrays are a specialized type of collection only useable on one specific type per array. Instead of having its own type, an array of type `TYPE` is created by using the type `TYPE[]`. Otherwise, arrays can be intialized with a `collection` variable only containing data of type `TYPE`.
+
+Example:
+
+```
+numbers: i32[] = { 10, 5, 20 };
+```
+
+Note that for both collections and arrays `NAME[index]` returns the actual stored element and not a copy, making it mutable and reflecting any changes to it in the actual list.
+
+Using `new TYPE[size]`, an array with exactly `size` elements set to the default value of `TYPE` is created:
+
+```
+numbers: i32[] = new i32[25]; // 25 new i32's all set to the default value of i32 (0)
+```
+
+### 13.1.3 For-Each Loop
+
+To avoid required usage of the `for`-loop for looping over an collection (arrays are collections), ECY contains a specialized `foreach`-loop:
+
+```
+foreach (NAME : COLLECTION) {}
+```
+
+Where `NAME` is a named reference to the currently executed on element in the collection `COLLECTION`.
+
+For type-less collections, `NAME` cannot be transmuted unless converted into an impilicit data type.
+
+## 13.2 Advanced collections
+
+### 13.2.1 CollectionList
+
+Defined within `<list>` (.ecl).
+
+Acts as a dynamic collection in form of a class:
+
+```
+import <list>;
+list: CollectionList = new CollectionList(10); // CollectionList of size 10 is created
+list.Add(10); // An 11th member is added!
+list.RemoveAt(1); // Index 1 is removed!
+```
+
+### 13.2.2 List\<T>
+
+Defined within `<list>` (.ecl).
+
+Acts as a dynamic array in form of a class with an embedded generic, used like a `CollectionList` but requiring the generic to be given a type.
+
+\--- Spec End ---
+
+# IV How ECY will be handled
+
+Unlike some other programming languages, I want ECY to be part of the programmers, not part of my bank account. That's why ECY and it's entire Resources and Compiler will be entirely open-source and put under no Trademark or Copyright.
+
+ECY, as I see it, is a language “for the masses”. The entire point about ECY is to give power back to the programmer without sacrificing the simplicity to code in it (Simple Complexity), so a Copyright or making it closed-source goes entirely against this defining feature of the language.
+
