@@ -1566,3 +1566,668 @@ ECY can crash from function variables if they're not dealt with accordingly. Her
 * Call a null function variable: Falls under `NullPointerException`. Because of this a function variable always has the base value `null`, which can be tested for.
 * Print a function variable: Falls under `FunctionAttemptParseException`. Because of the ambiguity of how printing a function should look it is impossible to print one. For function generics, this is dealt with by ECY during compilation by skipping over print instructions on function variables when inputted into a generic method.
 
+
+Inside the brackets of the struct syntax fields are put. This is where modifiers mainly come into play and have the biggest effect on a field's visibility and accessibility.
+
+The fields in a struct work either as shared variables for every instance (+S) or as per-instance variables (-S).
+
+Here is an example of a basic Complex struct:
+
+```
+struct Complex {
+  real: f32;
+  img: f32;
+}
+```
+
+### 7.1.2 General modifiers in fields
+
+The general field modifiers are `public`, `private`, `protected`, and `static`, the effects will be explained in following sub-chapters.
+
+### 7.1.3 The public modifier
+
+Example of using the `public` modifier on a field inside a struct:
+
+```
+struct Complex {
+  public real: f32; // Visible outside this scope
+  img: f32; // Not visible outside this scope
+}
+```
+
+The `public` modifier enables the Visible State (V State) of a field/variable (as seen in 1.6.1) and in structs it allows the field to be accessed from outside the struct's brackets. Without the `static` modifier, an instance of the struct is needed for the field to be accessed.
+
+### 7.1.4 The private modifier
+
+Example of using the `private` modifier on a field inside a struct:
+
+```
+struct Complex {
+  public real: f32; // Visible outside this scope (public)
+  private img: f32; // Not visible outside this scope (private)
+}
+```
+
+The `private` modifier disables the V State of a field/variable (as seen in 1.6.1) and in structs it prohibits a field from being accessed from outside the struct's scope. Same as `public`, an instance is required without the use of `static`.
+
+### 7.1.5 The protected modifier
+
+Example of using the `protected` modifier on a field inside a struct:
+
+```
+struct Complex {
+  protected real: f32; // Not visible outisde this struct's and its children's scopes (private)
+  public img: f32; // Visible outside this struct's and its children's scopes (public)
+}
+```
+
+The `protected` modifier “protects” a field of a struct. This makes it unavaiable outside the struct or any of it's children, more about which you can find in Chapter 4.3.
+
+### 7.1.6 The static modifier
+
+Example of using the `static` modifier on a field inside a struct:
+
+```
+struct Complex {
+  public static real: f32;
+  public img: f32;
+}
+Complex.real; // Works
+Complex.img; // Does not as non-static fields require an instance
+```
+
+The `static` modifier marks a field as “static” and “shared”, making all instances of the struct point to the same memory address if the field is accessed. Static fields can be accessed via instances.
+
+A static field can also be accessed without an instance using this syntax, given Name as the name of any struct definition and StaticField to be any static field within said definition:
+
+```
+Name.StaticField;
+```
+
+### 7.1.7 Creating struct instances
+
+ECY allows for the creation of instances from any struct definition using following syntax:
+
+```
+StructName Name = new Constructor();
+```
+
+Constructor() is any of the constructors of the given struct.
+
+A constructor is a special method inside a struct used to initalize a newly created instance with given parameters. ECY automatically creates two types of constructors: Identity and Full.
+
+Any constructor is made using this syntax:
+
+```
+struct MyStruct {
+  public construct MyStruct() {}
+}
+```
+
+Every field of a struct must be initialized either directly in the field definition or in a constructor, which is why constructors come in three flavors:
+
+1. Identity Constructor
+
+The identity constructor sets every field to either its default value or null (the nothing value).
+
+```
+struct Complex {
+  public real, img: f32;
+  public construct Complex() {
+    real = 0;
+    img = 0;  
+  }
+}
+```
+
+2. Shaped Constructor
+
+A shaped constructor sets only a certain amount of fields and sets the other to default or null.
+
+```
+struct Complex {
+  public real, img: f32;
+  public construct Complex(f32 _img) {
+    real = 0;
+    img = _img;  
+  }
+}
+```
+
+3. Full Constructor
+
+The full constructor sets every field.
+
+```
+struct Complex {
+  public real, img: f32;
+  public construct Complex(f32 _real, f32_img) {
+    real = _real;
+    img = _img;  
+  }
+}
+```
+
+So, for a struct like this:
+
+```
+struct A {
+  public a: f32;
+    
+  public construct A(f32 _a) {
+    a = _a;
+  }
+}
+```
+
+An instance is created like:
+
+```
+A myA = new A(15);
+A myA2 = new A(); // This is the Identity Constructor auto-generated by ECY if not defined but used
+```
+
+### 7.1.8 Struct instance methods
+
+In ECY, a `struct` can have so-called **instance methods** defined inside of them.
+
+An instance method is a faster way to call methods with `struct` instances. Normally, a non-instance methods working on a `struct` instance looks like this:
+
+```
+struct A {
+  public a: f32;
+  public construct A(f32 _a) {
+    a = _a;
+  }
+}
+
+PrintValue(A instance) -> void {
+  println(instance.a);
+}
+```
+
+By moving this method inside the `struct` body, you can call it directly from an instance. This also removes the need for a reference, e.g. the parameter `A instance` inside `PrintValue()` is a reference. Instead, the keyword `this` acts like a reference to the instance the method is called with inside the `struct` body:
+
+```
+struct A {
+  public a: f32;
+  public construct A(f32 _a) {
+    a = _a;
+  }
+  public PrintValue() -> void {
+    println(this.a);
+  }
+}
+```
+
+The `this` keyword is also avaiable inside constructors, allowing for the constructor parameters to be named like the `struct` fields:
+
+```
+struct A {
+  public a: f32;
+  public construct A(f32 a) {
+    this.a = a;
+  }
+}
+```
+
+## 7.2 The class
+
+### 7.2.1 Creating a class
+
+Like a struct is created using the `struct` keyword, a class can be created using its keyword - `class`. Important to know is that struct and class bodies can both contain virtually the same things while also being instanced equally, meaning their difference derives from how they are stored and handled:
+
+```
+public class MyClass {
+  a: f32;
+}
+```
+
+Unlike structs, class fields can be left without a modifier to have them default to whatever access modifier is applied to the class:
+
+```
+public class A {
+  a: f32; // Uses A's modifier - public
+  private b: f32; // Override A's modifier - private instead of public
+}
+```
+
+### 7.2.2 The difference between classes and structs
+
+Internally, ECY handles classes and structs as different types of data. A struct is by definition a custom data structure, making it an extension of the container definition, resulting in them being definable as data types, which is why structs are handled as data types by ECY, causing them to act like primitive data in code. This means structs as method parameters are passed **by-copy** and classes are passed **by-reference**.
+
+Resulting from this is that without a proper way to force **by-reference** and **by-copy**, ECY would break its most important rule: Opting-in. The solution to this is discussed in the following sub-chapter.
+
+Classes, however, are seen as objects by ECY, leading to them being passed **by-reference**. This is also due to the way class objects are stored, as structs are usually stack memory and classes are allocated in the heap.
+
+### 7.2.3 Forcing by-reference and by-copy in parameters
+
+ECY allows the use of the `&`-token placed against the type like `TYPE&` to force a parameter to be sent **by-reference**. For primitive data types and containers like the array, this causes the actual variable to be passed instead of a pointer or a copy of the value:
+
+```
+struct ABC {
+  public a, b, c: f32;
+}
+
+PrintA(ABC& obj) -> void {
+  println(obj.a);
+}
+```
+
+However, by using the `$`-token, you can force **by-copy**, which will always pass an argument as a copy. class or struct, or even primitive.
+
+```
+struct ABC {
+  public a, b, c: f32;
+}
+
+PrintDoubleABC(ABC$ obj) -> void {
+  obj.a *= 2;
+  obj.b *= 2;
+  obj.c *= 2;
+  println(obj.a + ", " + obj.b + ", " + obj.c);
+}
+```
+
+The `&`-token is resolved for literal values by allocation temporary memory for it.
+
+### 7.2.4 Embedded class generics
+
+A `class` in ECY can have generic types. These generics work like embedded method generics, just for classes:
+
+```
+public class myClass<T> {}
+```
+
+The embedded class generics can be used as placeholders in instance fields and methods. There can also be multiple generics for one class, following the naming rules of embedded method generics:
+
+```
+public class TwoNumbers<T1, T2> {
+  num1: T1;
+  num2: T2;
+}
+```
+
+Because unconstrained embedded generics cannot be given values in any way, `constrain` works for embedded class generics using the `from` keyword in combination with `familyOf()`:
+
+```
+public class GenericNumber<T from familyOf(i32)> {
+  num: T;
+}
+```
+
+The same conversion rules apply to the `from`-construction as to the `constrain`-construction in methods.
+
+In the class constructor, the generics do not need to be repeated as embedded method generics. Instead, any embedded method generics for the constructor acts as entirely new generics:
+
+```
+public class Tuple<T1, T2> {
+  Item1: T1;
+  Item2: T2;
+  public construct Tuple(T1 Item1, T2 Item2) {
+    this.Item1 = Item1;
+    this.Item2 = Item2;
+  }
+}
+```
+
+When creating an instance of a class with embedded generics, you need to give actual types for the generics like this:
+
+```
+public class Tuple<T1, T2> {
+  Item1: T1;
+  Item2: T2;
+  auto construct Tuple(T1 Item1, T2 Item2) {}
+}
+Tuple<str, i32> myTuple = new Tuple("Hi", 42);
+```
+
+As visible, calling the constructor of a class with embedded generics does not require giving types for the generics. If the constructor has its own embedded method generics, those need to be given an actual type:
+
+```
+public class Tuple<T1, T2> {
+  Item1: T1;
+  Item2: T2;
+  public construct Tuple<T3>(T1 Item1, T2 Item2, T3 Print) {
+    this.Item1 = Item1;
+    this.Item2 = Item2;
+    println(obj2str(Print));
+  }
+}
+Tuple<str, i32> myTuple = new Tuple<str>("Hi", 42, "Created new Tuple");
+```
+
+## 7.3 Operator Overloading
+
+### 7.3.1 Getting started with operator overloading
+
+Internally, ECY handles operators like a special function - and as one knows, a method can be overloaded, hence why the operator method can be overloaded for both structs and classes. The basic syntax for an operator being converted to a method call is:
+
+```
+a + b;
+=>
+a.operator+(b);
+```
+
+To actually overload this function, you create a function named `operator?`, where `?` is replaced by the operator of choice and where there is, depending on wether the operator is binary, a parameter resembling the right operand (in above case `b`) and a non-void return type for what type the operation equals to. Operator overloading, however, only works within object definitions:
+
+```
+struct A {
+  public a: f32 = 0;
+  
+  public construct A(f32 a) {
+    this.a = a;
+  }
+  public operator+(A b) -> A {
+    return new A(this.a + b.a);
+  }
+}
+```
+
+You can also overload unary operators by not adding a parameter.
+
+## 7.4 Unified & multiplex
+
+### 7.4.1 Unified structs
+
+A `unified struct` is a special struct in ECY that allows you to place struct fields onto the same memory address but as different types:
+
+```
+unified struct ABC {
+  public a: f32;
+  public b: i32;
+  public c: d32;
+}
+```
+
+But, like this all the fields are still on different memory addresses. Instead, the `unify` keyword actually unifies and sets the memory addresses of the following values equal:
+
+```
+unified struct ABC {
+  public a: f32;
+  public b: i32;
+  public c: d32;
+  unify a, b;
+}
+```
+
+The `unify` keyword can be applied to multiple fields more than once per struct, but only once per field.
+
+### 7.4.2 Multiplex structs
+
+Multiplex structs are a runtime alternative to unified structs that allow structs fields to carry the same values, but different memory addresses.
+
+To create one, you use the `multiplex` keyword and instead of `unify` use `plex`:
+
+```
+multiplex struct MyPlexed {
+  public a, c, e: f32;
+  public b, d, f: i32;
+  plex a, b;
+  plex c, d;
+  plex e, f;
+}
+```
+
+### 7.4.3 Multiplex classes
+
+Unlike structs, classes cannot have unified components as class fields are direct values and struct field behave like pointer to themself living in stack (hence why unifying works). To compensate, plexing inside multiplex classes is possible:
+
+```
+public multiplex class MyPlexedClass {
+  a: f32;
+  b: i32;
+  c: d32;
+  plex a, b, c;
+}
+```
+
+You can also plex class or struct references' fields inside a multiplex class, as plexing is runtime instead of compile-time:
+
+```
+public struct A {
+  public a: f32;
+}
+public struct B {
+  public b: i32;
+}
+public multiplex class AB {
+  public MyA: A;
+  public MyB: B;
+  plex A.a, B.b;
+}
+```
+
+## 7.5 Inheritance
+
+### 7.5.1 Struct inheritance
+
+When a struct inherits from another struct, it “inherits” the “parent's” fields, methods, operator overloads and constructors.
+
+The parent x of child y is known as the “superstruct x of substruct y” and vice versa.
+
+To create a struct that inherits from another, use the `<-`-operator on the struct:
+
+```
+struct A {
+  public a: f32;
+}
+struct B <- A {
+  public b: f32;
+}
+```
+
+A struct can inherit from multiple other structs:
+
+```
+struct A {
+  pubic a: f32;
+}
+struct B {
+  public b: f32;
+}
+struct C <- A, B {
+  public c: f32;
+}
+```
+
+If any field is found exactly the same in more than one superstruct, the substruct inherits the field only from the first given superstruct. In the case of methods, the same applies if parameters are equal, otherwise the ambigous methods become overloads of one another.
+
+```
+struct A {
+  public a: f32;
+}
+struct B {
+  public a: f32;
+}
+struct C <- A, B {} // Only inherits a from A as it's the first given
+```
+
+Unified and multiplex structs cannot inherit or be inherited from.
+
+### 7.5.2 Class inheritance
+
+Class inheritance is virtually the same as struct inheritance, but multiplex classes can inherit and be a superclass to multiplex subclasses:
+
+```
+public class A {
+  a: f32;
+}
+public multiplex class B <- A {
+  b: f32;
+  plex a, b;
+}
+```
+
+### 7.5.3 Template and override
+
+If needed, a class or struct field/method can be set as a template, making it not exist in the actual definition but can then be overridden like a blueprint in children. For this the `template` and `override` keyword is used. Templated methods also don't have a method body and end on a `;` instead of `{}`.
+
+```
+public class TemplateClass {
+  template a: f32;
+  template GetA() -> f32;
+}
+public class ChildClass <- TemplateClass {
+  override a: f32;
+  override GetA() -> f32 { return a; }
+}
+```
+
+Every templated field/method **must** be overridden in the child.
+
+To automatically flag every field/method as being a possible override, you can use `override` on the class itself:
+
+```
+public class TemplateClass {
+  template a: f32;
+  template GetA() -> f32;
+}
+public override class ChildClass <- TemplateClass {
+  a: f32;
+  GetA() -> f32 { return a; }
+}
+```
+
+## 7.6 Class and struct body properties
+
+### 7.6.1 get and set property
+
+To control the behaviour of a field when accessed or assigned, ECY allows a custom get-function and set-function to be defined using the get-set-property. The syntax of which is:
+
+```
+FIELD [
+get { CODE; }
+set { CODE; }
+]
+```
+
+Inside the get-property, there must be one and only one return of a value of equal type to the field's type. Inside set, you can do whatever you wish to, except for returning a value as set is a code block and get is more like a condensed getter method.
+
+ECY allows the field itself to be used inside the get-set-property without any issues or hidden backing fields by just ignoring the getter and setter on a field inside its own getter and setter:
+
+```
+public class Date {
+  day: i32;
+  month: i32;
+  year: i32;
+  public construct Date(day: i32, month: i32, year: i32) { this.day(day); this.month(month); this.year(year); }
+}
+time: Date = new Date(23, 1, 2026);
+public class Birthdate <- Date {
+  age: i32 [
+  get {
+    if (this.month >= time.month && this.day >= time.day)
+      return time.year - this.year;
+    else
+      return (time.year - this.year) - 1;
+  }
+  ]
+}
+```
+
+If a field does not have a setter, it's value cannot be set. If it does have a setter, the `value` keyword is a reference to the given set value.
+
+### 7.6.2 Struct return property
+
+ECY allows struct instances to be used like a variable using the **return property**. This special property field follows the following syntax:
+
+```
+struct SomeStruct {
+  return { CODE } => ReturnedValue;
+}
+```
+
+Now using a SomeStruct instance as a variable will instead run CODE inside the return property and then return ReturnedValue as the value the as-variable-used instance is then replaced by in runtime. Any variables defined in CODE are also scopeable by ReturnedValue.
+
+A struct without a return property can simply not be used as a variable from an instance.
+
+## 7.7 Extending objects
+
+### 7.7.1 Extension and extendable
+
+In ECY, the definition of a class or a struct can be split into multiple smaller sud-definitions called extensions. For both compile-time performance and safety reasons, only objects marked with `extendable` can be extended.
+
+Extensions themselve are their own object type `extension<objtype>`, where `objtype` is replaced by either `struct` or `class`.
+
+Here is an example of splitting a struct definition:
+
+```
+extendable struct AB {
+  public a: f32;
+}
+extension<struct> AB {
+  public b: f32;
+}
+```
+
+There are two rules one must follow to extend an object
+
+* The object must be findable in scope, wether via imported libraries or namespace access
+* The extension\<> X of extendable object Y must also be named Y to extend extendable object Y – in short, the name of the extension and the extended object must match
+
+## 7.8 Automatic functionality
+
+### 7.8.1 The auto constructor
+
+Using the `auto` keyword combined with `construct` assigns the compiler to automatically create a constructor for the fields defined in the parameter list. This is to make creating big data objects less time-consuming:
+
+```
+public class MyClass {
+  a, b, c, d: f32;
+  auto construct MyClass(f32 a, f32 c) {} // Creates a shaped constructor for a and c
+}
+```
+
+### 7.8.2 Operate keyword
+
+The `operate` keyword signals the compiler to create automatic component-wise instance-to-instance operator overloads for a field in combination with all other operate fields:
+
+```
+struct Vector2 {
+  operate public x, y: f32;
+  auto construct Vector2(f32 x, f32 y) {}
+}
+// The shortest functional Vector2 ever conceived
+```
+
+### 7.8.3 Require keyword
+
+The `require` keyword solves the ambiguity of instance-in-instance references by allowing the user to specify which fields cannot be stripped from an instance under any and all circumstances:
+
+```
+import <emath>; // Ignore for now
+
+struct Vector2 {
+  operate require public x, y: f32;
+  public magnitude: f32 [
+    get { return sqrt(x*x + y*y); }
+  ]
+  auto construct Vector2(f32 x, f32 y) {}
+}
+// Even shorter for the amount of functionality in this thing
+```
+
+## 7.9 Object conversion
+
+### 7.9.1 Struct conversion
+
+ECY allows substructs to be converted into objects of the type of one of their superstructs. This makes it possible to have an array of instances of the superstruct and fill it with instances of the substructs.
+
+Converting a struct instance of type A into a struct instance of type B returns a copy of that struct, but converted to type B.
+
+### 7.9.2 Class conversion
+
+Classes also follow the same rules as structs in conversion, though converting a class instance of type A to a class instance of type B will return a reference to A interpreted as an internal pointer of type B\*, which can be used like a usual instance of type B without requiring or allowing its use as a pointer.
+
+# 8 Code Handling
+
+## 8.1 Special Keywords
+
+### 8.1.1 Volatile
+
+Marks a variable or field as **not optimizable**, prompting the compiler to not optimize any usage of the variable.
+
+The exact optimizations not performed are:
+
+* Register allocation: Saving a locally scoped not top-level variable in a register if only used and defined inside that small scope (like a function body)
