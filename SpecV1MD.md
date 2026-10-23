@@ -524,4 +524,406 @@ var = var * (5 + num) = var * 5 + var * num;
 
 ### 2.1.5 Conditional operators
 
-You can use conditional operators to test conditions. A basic condition follows this structure, given that `?` is a conditional operator and the the whole term is enclosed in a pair of 
+You can use conditional operators to test conditions. A basic condition follows this structure, given that `?` is a conditional operator and the the whole term is enclosed in a pair of parantheses:
+
+```
+a ? b
+```
+
+Where `a` and `b` are both of compatible data types or terms that result in values of compatible data types.
+
+Here are all conditional operators:
+
+
+
+| Operator | Function                                                                       | Name                     |
+| -------- | ------------------------------------------------------------------------------ | ------------------------ |
+| ==       | returns true if a and b are equal by value                                     | Equality operator        |
+| ===      | returns true if a and b are the same object or are pointing to the same object | Memory equality operator |
+| \<       | returns true if a is smaller than b                                            | Smaller than operator    |
+| >        | returns true if a is bigger than b                                             | Bigger than operator     |
+| \<=      | returns true if a is smaller or equal to b                                     | Smaller equal operator   |
+| >=       | returns true if a is bigger or equal to b                                      | Bigger equal operator    |
+| !=       | returns true if a and b are not equal                                          | Inequality operator      |
+
+## 2.2 Advanced operators
+
+### 2.2.1 Bitwise Operators
+
+Bitwise operators allow for the bit manipulation of any byte-based data type, primarily numerical and character types like `i32`, `u8`, `f64`, `str`, and other types. There are 2 different types of bitwise operations in ECY:
+
+* Bitwise Gate Operations: Operations that apply logic gate transformations onto variables
+* Bitwise Shift Operations: Operations that transform the bit order of a variable
+
+The Bitwise Gate Operations also have condensed versions of their operators.
+
+### 2.2.2 Bitwise Gate Operators
+
+These are operators that apply logic gate transformations onto variables:
+
+| Operator | Function                                | Name        | Example     |
+| -------- | --------------------------------------- | ----------- | ----------- |
+| ^        | Applies the XOR logic gate to a using b | Bitwise XOR | 8 ^ 4 = 12  |
+| \|       | Applies the OR logic gate to a using b  | Bitwise OR  | 8 \| 4 = 12 |
+| &        | Applies the AND logic gate to a using b | Bitwise AND | 8 & 4 = 0   |
+| \~       | Applies the NOT logic gate to a(unary)  | Bitwise NOT | \~4 = -5    |
+
+### 2.2.3 Bitwise Shift Operators
+
+These are operators that manipulate the bits of a byte-based data type. As of ECY-1.0, only 2 of those exist:
+
+
+
+| Operator | Function                                                            |
+| -------- | ------------------------------------------------------------------- |
+| \<\<     | Shifts all the bits of a by b to the left (b has to be an integer)  |
+| >>       | Shifts all the bits of a by b to the right (b has to be an integer) |
+
+### 2.2.4 Logical Operators
+
+The bitwise operators can be used for conditions as well, where `^`, `|` and `&` work the same way for conditionals, returning the respective transformation with the left condition's result and the right one, repsectively, even tho they are found as `^^`, `||` and `&&` and the conditions in question need to be enclosed by a pair of parantheses, each.
+
+Bitwise NOT only exists as ! in conditions and boolean math, flipping the result of the condition or boolean result. Same as with the other bitwise operators, the condition has to be enclosed in a pair of parantheses.
+
+Here is an example of using LO's:
+
+```
+(a > b) && (b != 5)
+// Returns true if a is bigger than b and b is not 5
+
+(a > b) || (b != 5)
+// Returns true if a is bigger than b or b is not 5 or if both are true.
+
+(a > b) ^^ (b != 5)
+// Returns true if either a is bigger than b or b is not 5. If both or none are true, returns false.
+
+!(a > b)
+// Returns the opposite of if a is bigger than b. Effectively equal to (a <= b).
+```
+
+# 3 Memory Model
+
+## 3.1 Pointers
+
+### 3.1.1 Introduction to the concept of pointers in ECY
+
+Pointers are a quick and efficient way to handle memory in ECY. They allow for memory addresses to be stored and edited by code.
+
+Every pointer in ECY is stored as a 64-bit ulong and can have 2 values extracted from itself: Its value, which is the memory address it's pointing at, and the value of the memory found at that address.
+
+The act of extracting the value of the memory a pointer is pointing at is called “dereferencing a pointer”. To dereference a pointer you do:
+
+```
+*NAME;
+```
+
+Where `NAME` is the name of the pointer in question.
+
+### 3.1.2 Pointer types & Free pointers
+
+There are 2 types of pointers one will encounter in ECY:
+
+* Typed pointers: These are pointers that point to an explicit type (like `int`, `str` or even `bool`)
+* Free pointers: These are pointers that point to a certain size of memory (mainly 1, 8, 16, 32, 64 and 128 bits of size). Unlike typed pointers, these pointers can only changed the derefenced value using integer values as bytemaps, even though they can still point to non-integer types. Free pointers also cannot point to string or instance structures as those are of unpredictable size.
+
+### 3.1.3 Creating a typed pointer
+
+The creation of a typed pointer in ECY follows the same procedure as creating a normal variable, save for the addition of a star after the type name:
+
+```
+myPtr: i32*;
+```
+
+Every variable in ECY (even pointers) has a memory address at where it lives in the computers memory. Pointing to any value the compiler would save in a register will allocate memory instead, except for the placeholder which cannot be pointed to. To now actually point a pointer, you need to set it to a memory address, which you can do by using this syntax, where `PTR` is the name of the pointer you're pointing and `NAME` is the name of the variable you want to point it at:
+
+```
+PTR = &NAME;
+```
+
+### 3.1.4 Short explanation of syntax tokens & objects
+
+In ECY, syntax tokens are symbols that have special functionality if they are placed before or after a syntax object.
+
+Syntax objects are the static parts of syntax, usually referred to by a fully capitalized name, though operators are also seen as syntax objects.
+
+Here is a syntax example with syntax objects & tokens marked:
+
+```
+NAME: TYPE = VALUE;
+// Objects: NAME, TYPE, =, VALUE
+// Tokens: None
+PTR = &NAME;
+// Objects: PTR, =, NAME
+// Tokens: &
+```
+
+The distinction between objects and tokens lies within their syntax consistency. The syntax consistency of any part of a syntax is how static the placement of the given syntax piece is.
+
+As an example, in the variable declaration syntax:
+
+```
+NAME: TYPE = VALUE;
+```
+
+`NAME` and `TYPE` have high syntax consistency as they cannot be omitted from the declaration syntax while `=` and `VALUE` have a medium syntax consistency as those two can be omitted depending on context.
+
+In the typed pointer pointing syntax:
+
+```
+PTR = &NAME;
+```
+
+`PTR` and `=` have high syntax consistency. `NAME` and `&` have a medium syntax consistency because they can be replaced by a literal `u64` value:
+
+```
+var: i32 = 15;
+ptr: i32*;
+ptr = &var; // valid; points ptr at the address of var
+ptr = 15; // valid; points ptr at address 15
+```
+
+### 3.1.5 The ‘&’-Token
+
+The `&`-Token returns the memory address of any given object or variable `NAME`. It has to be placed before `NAME` and it has to directly touch `NAME`:
+
+```
+&NAME; // NAME is to be replaced by the name of any given object or variable; Returns the address of NAME
+```
+
+The `&`-Token can be used in any context and only has a few exceptions when it comes to functionality, to which we'll get later.
+
+In this example, we print out the memory address of an `i32` num:
+
+```
+num: i32 = 42;
+println(&num);
+```
+
+### 3.1.6 The ‘\*’-Token
+
+The `*`-Token is used to return the value of the object or variable a pointer `PTR` points to. It has to be placed before `PTR` and it has to directly touch `PTR`:
+
+```
+*PTR; // Same as '&'-Token, PTR is any pointer and has to be replaced by that pointers name
+```
+
+If the `*`-Token is used on an empty pointer, the compiler can react in to ways:
+
+* If the pointer was declared with the keyword `safe` before the pointer type: Allocate new memory of matching type and point the pointer to that new memory before dereferencing it
+* If the pointer was not declared with the keyword `safe`: Throw `NullPointerException`
+
+Unlike the `&`-Token, the `*`-Token returns an object, not a value, allowing you to reassign a dereference to change the variable or object behind the value directly:
+
+```
+// held true for all following code
+PTR: safe i32*;
+NAME: i32 = 25;
+PTR = &NAME;
+// End of held true code
+
+*PTR = 25; // valid
+&NAME = 25; // invalid
+
+// using the built-in "printobj" function to print the object given:
+printobj(*PTR); // prints the name of NAME, its type and its value
+printobj(&NAME); // prints "{NULL: NULLTYPE; Value: NULL}"
+```
+
+### 3.1.7 Creating free pointers
+
+As said earlier, free pointers allow for the creation of pointers confined to a bit size instead of a specific type.
+
+Free pointers are created using the free pointer types:
+
+```
+ptr1
+ptr8
+ptr16
+ptr32
+ptr64
+ptr128
+```
+
+The special thing about free pointers is that the `*`-Token is not required during declaration, but the Compiler ignores the existence of it anyways. This means that for free pointers, both of these are valid declarations:
+
+```
+freePtr1: ptr32;
+freePtr2: ptr32*;
+```
+
+Otherwise, free pointers work like typed pointers, except for two big differences:
+
+* Bit assignment: If you dereference a free pointer, the returned value will be a `ixx`, `xx` being the bit number of the pointer, which means that a floating-point decimal will return as an integer.
+
+```
+num: f32 = 5.5f;
+freePtr1 = &num;
+print(*freePtr1); // prints the bits of num as an i32
+```
+
+This also applies to assigning a dereferenced value, which must happen as an `ixx`. ECY offers a special function `cast2Bit(Numerical num)`, which takes in any numerical value and converts it to this `ixx` value. It is important to know that dereferencing a free pointer pointing to an integer will return a normal integer that is equal in value to the real integer that is dereferenced.
+
+* By-size pointing: When pointing a free pointer you can point it to any primitive data type with bit width x that matches the free pointer's declared size:
+
+```
+num: f32 = 5.5f;
+val: i32 = 61;
+wrongval: i64 = 12;
+freePtr: ptr32;
+freePtr = &num; // This works as freePtr points to a size of 32 bits and num is a 32-bit primitive data type
+freePtr = &val; // Also works as freePtr points to a size of 32 bits that matches val's bit width of 32
+freePtr = &wrongval; // This will throw an error as freePtr points to a size of 32 bits but wrongval has a bit width of 64
+```
+
+### 3.1.8 Conversion between pointers
+
+Any pointer can be converted into another of same pointer type (free, typed, safe) if given conditions are met:
+
+* Same bit length: The bit length the pointers point at must be equal
+* Convertable type: The pointers must point at convertable types (like float → int)
+* Safe conversion specialty: If the converted to pointer is `safe`, conversion cannot occur. Only `safe` to safe/typed/free conversion is possible
+
+## 3.2 Object memory handling
+
+### 3.2.1 Where primitives life
+
+Primitive values are always allocated to the stack if either they're pointed to somewhere in code or not optimizable by a temporary register value.
+
+Only non-object primitives are actually in the stack, with structs being an exception by being placed in the stack as well, even though they're not a primitive. For all other memory, a different region is used.
+
+### 3.2.2 Where objects life
+
+Structs in ECY, as discussed above, are counted as similar to primitive data and thus allocated to the stack. On the other hand, classes are always heap-allocated.
+
+Pointers to any object are also counted as primitve data (because they technically are) and so they're also stack allocated.
+
+# 4 Access modifiers
+
+## 4.1 Basics
+
+### 4.1.1 Definition of modifiers
+
+In ECY, modifiers allow for the transmution of the states of a variable.
+
+The states of a variable, also called variable states, define how accessible a variable is. There are 4 states, those being:
+
+* V: The visibility state of the variable. Defines if the variable is visible in the current scope
+* R: The readability state of the variable. Defines if the variable can be read in the current scope
+* W: The writeable state of the variable. Defines if the variable can be reassigned in the current scope
+* S: The static state of the variable. Defines if the variable is static, which changes how the variable behaves
+
+Any access modifier in ECY can be defined using the change of the 4 variable states, more precisely the states controlling access to the variable, not it's value. X being seen as any variable state, +X means enable, X means no change, and -X means disable.
+
+```
+public (+V S)
+static (V +S)
+private (-V S)
+global (+V S) For all scopes
+hidden (/ / / /) special as it avoids a variable to exist in said scope (not appliable globally)
+```
+
+In the same way, any value access modifier can also be defined:
+
+```
+readonly (+R -W);
+writeonly (-R +W);
+readwrite (+R, +W);
+```
+
+### 4.1.2 Per-Scope Modifiers
+
+ECY's memory model opens way for the ability to define the accessability of a variable and its value inside any kind of scope. The given kinds of scopes at the current time are:
+
+```
+program: Anything not sorted into the other scope kinds
+statement: Any statement inside { }
+function: Inside functions heads and bodies
+class: Inside class bodies
+struct: Inside any kind of struct's body
+library: Inside libraries
+header: Inside headers
+```
+
+To actually define modifiers per-scope, one has to use the following syntax:
+
+```
+(scope modifier) variable
+```
+
+Note that any modifier that enables the Static State of a variable may not be used per-scope due to limitations given by compilation and IntelliSense, but also that immutable variables have a constant immutability.
+
+In the same way, `readwrite` is the opposite being a per-scope only modifier like hidden.
+
+Example of per-scope modifiers being used:
+
+```
+(program hidden) (function public readwrite) readonly val: f32 = 42;
+```
+
+### 4.1.3 Priority-System in per-scope modifiers
+
+Inside ECY, per-scope modifiers follow a premanent ruleset for resolving the priorities of per-scope modifiers.
+
+First of all, any scope can only be listed once, so the priorities between them are always the same, being that all have equal priority. The difference is the priority towards the un-scoped modifier, which is based on position:
+
+```
+(program hidden) public (function hidden)
+~~~^~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+Overrides public       Overriden by public
+```
+
+This way, complex modifier systems like the following are possible to be done in ECY:
+
+```
+(program readwrite) readonly (function hidden) (class writeonly) global val: f32 = 1612;
+/*
+Global readonly val, but:
+* +R +W inside program scope
+* hidden in functions
+* -R +W and inside classes
+*/
+```
+
+# 5 Control Flow
+
+## 5.1 Conditionals
+
+### 5.1.1 Built-in truth values
+
+ECY comes shipped with built-in truth values like most programming languages, those being `true` and `false`. It's important to know that like C and C++, bools can be represented as numbers and same can true and false, even if printing them prints true and false instead of 1 and 0.
+
+
+
+Casting `true` and `false` to any number primitive will return 1 and 0:
+
+```
+println((int)true); // prints "1"
+println((int)false); // print "0"
+```
+
+This allows for bit manipulation using `true` and `false` as quick-hand 1's and 0's, using the ECY compiler to have it setup regvals automatically:
+
+```
+val: f32 = 10;
+val += (int)true;
+println(val); // prints "11"
+```
+
+### 5.1.2 If-Statement, else-statement and else-if-statement
+
+The `if`-Statement in ECY follows a robust but powerful syntax:
+
+```
+if (CONDITION) { CODE }
+```
+
+Same does the `else`- and `else if`-statement, both working like expected from other programming languages:
+
+```
+if (CONDITION) { CODE }
+else if (CONDITION) { CODE }
+else { CODE }
+```
+
+Important to note is that inside `CODE`, no methods or objects can be defined. `CODE` also counts as a scope, so any variables defined inside of it are not accessable to code outside of it.
+
