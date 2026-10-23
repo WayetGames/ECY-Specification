@@ -2907,3 +2907,4 @@ Unlike some other programming languages, I want ECY to be part of the programmer
 
 ECY, as I see it, is a language “for the masses”. The entire point about ECY is to give power back to the programmer without sacrificing the simplicity to code in it (Simple Complexity), so a Copyright or making it closed-source goes entirely against this defining feature of the language.
 
+Not only will ECY be open-source, but anyone can edit the source code of the compiler and resources, though banning still happens to people who deliberately destroy the source intentionally in any way, shape, or form.
